@@ -58,7 +58,7 @@ function VirtualMachine() {
         if(this.db64("AAAAB//4AAAAAAAAAA==",inst)) temp += this.get_reg(r2);
         if(this.db64("AAAAAAAAAAAAAAAIEA==",inst)) this.pushB(temp);
         if(this.db64("AAAAAAAAAAAAAAAEIA==",inst)) this.pushW(temp);
-        if(this.db64("ft+3+/8L/wgAAAZAAA==",inst)) {this.updateFlags(temp);console.log('flags',this.regs[15])}
+        if(this.db64("ft+3+/8L/wgAAAZAAA==",inst)) {this.updateFlags(temp)}
         if(this.db64("fN832+/77/gAAAZAAA==",inst)) temp &= 0xFFFF;
         if(this.db64("fP8/3+//7/gAAAZzAA==",inst)) this.set_reg(r1, temp);
         if(this.db64("AABAAAAAAAAAAAAADA==",inst)) this.set_memB(addr, temp);
@@ -146,7 +146,6 @@ function VirtualMachine() {
     this.syscall = () =>{
         cmd = this.get_reg(11)
         if(cmd==19) terminal(String.fromCharCode(this.get_reg(10)))
-        //console.log(this.get_reg(11))
     }
 
     this.step = () => {

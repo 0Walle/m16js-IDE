@@ -30,9 +30,6 @@ function Assembler() {
     }
 
     this.assemble = (code) =>{
-        //$('#error').html('')
-        //$('#error').css('display','none')
-        //code = editor.getValue()
         code = code.split('\n')
 
         labels = {}
@@ -149,17 +146,6 @@ function Assembler() {
         }
 
         return mcode
-
-        /*if(mcode){
-            $('#exec').prop('disabled',false)
-        }*/
-
-        //console.log(encodeURI(mcode))
-        //console.log(mcode)
-        //output = encodeURI(JSON.stringify({code:mcode,bp:breakpoints}))
-        //console.log(output)
-        //console.log( JSON.parse(decodeURI(output) ))
-        //console.log(mcode)
     }
 }
 

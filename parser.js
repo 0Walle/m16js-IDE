@@ -48,7 +48,6 @@ function parseOps(ops){
             }else{
                 Error('Expected \']\'')
             }
-            //[parseInt(match[1], 16),]
         }else{
             d = parseLiteral(ops)
             ops = ops.substr(d[1]).trim()
@@ -132,15 +131,12 @@ function parseLiteral(ops){
         match[1] = match[1].replace('\\\\','\\')
         match[1] = match[1].replace('\\\'','\'')
         return [new Operand(1,'',match[1].charCodeAt(0),0),match[0].length]
-        //console.log(match[1]);
-        //return [Operand(1,'',parseInt(match[1],2),0),match[0].length]
     }else if(match = /^(\d+)\b/.exec(ops)){
         return [new Operand(1,'',parseInt(match[1],10),0),match[0].length]
     }else if(match = /^([a-zA-Z_][a-zA-Z0-9_]*)\b/.exec(ops)){
         return [new Operand(1,match[1],0,0),match[0].length]
     }else{
         Error("Invalid Literal " + ops.substr(0,ops.indexOf(",")!=-1 ? ops.indexOf(","): undefined).trim())
-        //return "ERROR"
     }
 }
 
@@ -157,115 +153,3 @@ function parseUnexpr(ops){
     }
     return [mtemp,d[1]+it]
 }
-
-/*function parseInteger(ops) {
-    match = /^([+-]?\d+)\b/i.exec(ops)
-    if(match!=null){
-        return [(parseInt(match[1]) >>> 0)%256,match.index+match[0].length]
-    }
-    Error('Invalid Integer')
-}
-
-function parseHex(ops) {
-    match = /^#([a-f\d]{2})\b/i.exec(ops)
-    if(match!=null){
-        return [parseInt(match[1], 16),match.index+match[0].length]
-    }
-    Error('Invalid Hexadecimal')
-}
-
-function parseString(ops) {
-    match = /^'([^\']*)'/.exec(ops)
-    if(match!=null){
-        return [match[1],match.index+match[0].length]
-    }
-    Error('Invalid String')
-}
-
-function parseAddress(ops) {
-    match = /^\$([a-f\d]{1,4})\b/i.exec(ops)
-    if(match!=null){
-        return [parseInt(match[1], 16),match.index+match[0].length]
-    }
-    Error('Invalid Address')
-}
-
-function parseReg(ops) {
-    match = /^r([012345678])\b/i.exec(ops)
-    if(match!=null){
-        return [parseInt(match[1], 16),match.index+match[0].length]
-    }
-    Error('Invalid Register')
-}
-
-function parseRegAdd(ops) {
-    match = /^\[(r[012345678]|sp)([-+]\d+)?\]/i.exec(ops)
-    if(match!=null){
-        if(match[1]=='sp'){
-            return [15,match.index+match[0].length,(parseInt(match[2]) >>> 0)%256]
-        }
-        return [parseInt(match[1].substr(1), 16),match.index+match[0].length,(parseInt(match[2]) >>> 0)%256]
-    }
-    Error('Invalid OffsetRegister')
-}
-
-function parseInd(ops) {
-    let match = /^\((.*)\),\s*(r[a-f\d]|sp)/i.exec(ops)
-    if(match!=null){
-        console.log(match[2].substr(1))
-        if(match[1][0]=='$'){
-            val = parseAddress(match[1])[0]
-            form = 'int'
-        }else{
-            val = parseLabel(match[1])[0]
-            form = 'const'
-        }
-        if(match[2]=='sp'){reg = 15
-        }else{reg = parseInt(match[2].substr(1),16)}
-        return [val,match.index+match[0].length,reg, form]
-    }
-    Error('Invalid Indirect')
-}
-
-function parseConstant(ops) {
-    match = /^\*\*?[a-z_\d]+\b/i.exec(ops)
-    if(match!=null){
-        if (match[0][1]=='*'){
-            return [match[0].substr(1),match.index+match[0].length,'mem']
-        }else{
-            return [match[0],match.index+match[0].length,'imm']
-        }
-        
-    }
-    Error('Invalid Constant')
-}
-
-function parseLabel(ops) {
-    match = /^[a-z_\d]+\b/i.exec(ops)
-    if(match!=null){
-        return [match[0],match.index+match[0].length]
-    }
-    Error('Invalid Label')
-}
-
-function parseData(ops) {
-    data = []
-    for (var i = 0; i < ops.length; i++) {
-        if(isNaN(ops[i].value) || ops[i].form=='string'){
-            ints = []
-            for (var j = 0; j < ops[i].value.length; j++) {
-                ints.push(ops[i].value.charCodeAt(j))
-            }
-            data = data.concat(ints)
-        }else{
-            data.push(ops[i].value)
-        }
-    }
-    return data
-}*/
-
-/*console.log(parseOps("special, ',', r2"))
-console.log(parseOps("$05 , #02"))
-console.log(parseOps("$200, 90, sp"))
-console.log(parseOps("r1, *out"))
-console.log(parseOps("loop"))*/

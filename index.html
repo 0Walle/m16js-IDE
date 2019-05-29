@@ -2,10 +2,8 @@
 <html>
 <head>
     <title>Assembly</title>
-    <!-- <style type="text/css"></style> -->
     <script src="https://code.iconify.design/1/1.0.2/iconify.min.js"></script>
     <script src="jquery-3.3.1.min.js"></script>
-    <!-- <script src="peg-0.10.0.min.js"></script> -->
     <script src="codemirror/codemirror.js"></script>
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <link rel="stylesheet" href="codemirror/vscdark.css">
@@ -42,7 +40,6 @@
             padding: 0px;
             vertical-align: top;
             height: 150px;
-            /*position: relative;*/
         }
 
         #console_pre{
@@ -55,24 +52,14 @@
             font-size: 14px;
             overflow-y: scroll;
             overflow-wrap: break-word;
-            /*word-wrap: break-word;*/
-            /*word-break: break-all;*/
-            /*display: inline-block;*/
-            /*max-width: 100vw;*/
             white-space: pre-wrap;
         }
 
         #consolebar{
-            /*width: 100vw;*/
             color: white;
             background-color: #212121;
             padding: 1px 0px;
             height: 20px;
-           /* position: absolute;
-            top: -25px;
-            right: 0px;
-            width: 20px;
-            z-index: 100;*/
         }
 
         .consbutton{
@@ -129,17 +116,14 @@
           height: 20px;
         }
 
-        /* Track */
         ::-webkit-scrollbar-track {
           background: #a1a1a1; 
         }
 
-        /* Handle */
         ::-webkit-scrollbar-thumb {
           background: #666; 
         }
 
-        /* Handle on hover */
         ::-webkit-scrollbar-thumb:hover {
           background: #444; 
         }
@@ -222,8 +206,6 @@
         function runcode() {
             if(!running){
                 running = true
-                //$("#runbutton svg")[0].setAttribute("data-icon","typcn:media-stop")
-                //$("#runbutton span")[0].innerHTML = "Stop"
                 $("#runbutton")[0].setAttribute("disabled",1);
                 svm.loadHex(mach)
                 svm.set_reg(14,256)
@@ -233,14 +215,7 @@
                     svm.set_reg(i,0)
                 }
                 svm.set_reg()
-                //while(!svm.get_reg(3)){
-                //    console.log(svm.get_reg(14))
-                //    svm.step()
-                //}
                 id = setTimeout(()=>{
-                    //console.log(svm.get_reg(14))
-                    //svm.step()
-                    //if(svm.get_flag(3)) clearInterval(id)
                     while(!svm.get_flag(3)){
                         svm.step()
                     }
@@ -278,430 +253,11 @@
 
         function build() {
             savecode();
-            //localStorage.setItem('cm_code', editor.getValue());
             let t0 = performance.now();
             mach = asmer.assemble(editor.getValue())
-            //terminal(mach+'\n')
             let t1 = performance.now();
             terminal("Build finished in "+((t1-t0)/1000).toFixed(3)+"s\n\n")
         }
-
-        /*function byteOp(op1,op2) {
-            if(op1.type!='reg' || op2.type!='reg') Error('Invalid Register Operand')
-            return new Operand('pair',op1.value*16+op2.value)
-        }
-
-        function W2B(w){
-            return [(w & 0xff00) >> 8,w & 0x00ff]
-        }
-
-        line = 0
-        function Error(string) {
-            $('#error').html((line+1)+': '+string)
-            $('#error').css('display','inline')
-            throw string
-        }
-
-        function operandError(inst,op1,op2,op3) {
-            er1 = op1.type!='null' ? ' '+op1.type : ''
-            er2 = op2.type!='null' ? ', '+op2.type : ''
-            er3 = op3.type!='null' ? ', '+op3.type : ''
-            Error('Invalid Operand(s) for '+inst+': '+er1+er2+er3)
-        }
-
-        function CompileError(string) {
-            $('#error').html(string)
-            $('#error').css('display','inline')
-            throw string
-        }
-
-        function assemble() {
-            $('#error').html('')
-            $('#error').css('display','none')
-
-            code = editor.getValue()
-
-            localStorage.setItem('cm_code', code);
-
-            code = code.split('\n')
-
-            labels = {}
-
-            mem = []
-            mem_breakpoints = []
-            asmpc = 0
-            line = 0
-            macro_count = 0
-
-            function store(size,op,...data) {
-                mem.push(op)
-                mem.push(...data)
-                asmpc += size
-            }
-
-            set_continue = false
-            macro_code = []
-            macro_name = ''
-            for (var i = 0; i < code.length; i++) {
-                if(!code[i]) continue
-                line = i
-
-
-                inst = code[i].match(/^[\t ]*(?:([a-z_\d]*)[:])?(?:\s*(.?[a-z]+)(?:[\t ]+(.*))?)?/i)
-
-                if(set_continue && inst[2]!='.endmacro'){
-                    macro_code.push(code[i])
-                    continue;
-                }
-
-                //if(line == 57){console.log(asmpc)}
-                for (var bp = 0; bp < breakpoints.length; bp++) {
-                    if(line == breakpoints[bp]) mem_breakpoints.push(asmpc)
-                }
-                
-                if(inst[1]){
-                    labels[inst[1]] = asmpc+256
-                }
-
-                if(inst[3]){
-                    ops = parseOps(inst[3])
-                    op1 = ops[0]!=undefined ? ops[0] : new Operand('null',0)
-                    op2 = ops[1]!=undefined ? ops[1] : new Operand('null',0)
-                    op3 = ops[2]!=undefined ? ops[2] : new Operand('null',0)
-
-                    if(op3.type=='reg') r2 = op3
-                    else r2 = new Operand('reg',0)
-                }else{ops=[]}
-
-                if(inst[2]!=undefined){
-                    if(inst[2][0]==';') continue
-                    switch(inst[2]){
-                    case 'mov':
-                        if(op1.type=='reg'){
-                            console.log(ops)
-                            /*
-                            mov r1, I{, r2}
-                            mov r1, M/L{, r2}
-                            mov r1, r2
-                            mov r1, [r2{+I}]
-                            mov r1, (M/L),r2
-                            *-/
-                            if(op2.type=='imm') store(3,Opcodes.mov_r_i,byteOp(op1,r2),op2)
-                            else if(op2.type=='mem') store(4,Opcodes.mov_r_m,byteOp(op1,r2),op2)   
-                            else if(op2.type=='reg') store(3,Opcodes.mov_r_i,byteOp(op1,op2),new Operand('imm',0,'int'))
-                            else if(op2.type=='regadd') store(3,Opcodes.mov_r_zp,byteOp(op1,new Operand('reg',op2.value[0])),new Operand('imm',op2.value[1]))
-                            else if(op2.type=='ind'){
-                                console.log(op2)
-                                store(3,Opcodes.mov_r_d,
-                                    byteOp(op1,new Operand('reg',op2.value[1])),
-                                    new Operand('imm',op2.value[0],op2.value[2]))
-                            }
-                            //else if(op2.type=='label') store(4,Opcodes.mov_r_m,byteOp(op1,r2),op2)
-                            else operandError(inst[2],op1,op2,op3)
-                        }else if(op1.type=='mem' || op1.type=='label'){
-                            /*
-                            mov M/L, I
-                            mov M/L, r1{, r2}
-                            *-/
-                            if(op2.type=='imm') store(4,Opcodes.mov_m_i,op2,op1)
-                            else if(op2.type=='reg') store(4,Opcodes.mov_m_r,byteOp(op2,r2),op1)
-                            else operandError(inst[2],op1,op2,op3)
-                        }else if(op1.type=='regadd' && op2.type=='reg'){
-                            /*
-                            mov [r1{+I}], r2
-                            *-/
-                            store(3,
-                                Opcodes.mov_r_r,
-                                byteOp(op2,new Operand('reg',op1.value[0])),
-                                new Operand('imm', op1.value[1]))
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'add':
-                        /*
-                        add r1, M{, r2}
-                        add r1, I{, r2}
-                        *-/
-                        if(op1.type=='reg'){
-                            if(op2.type=='mem'){
-                                store(4,Opcodes.add_r_m,byteOp(op1,r2),op2)
-                            }else if(op2.type=='imm'){
-                                store(3,Opcodes.add_r_i,byteOp(op1,r2),op2)
-                            }else operandError(inst[2],op1,op2,op3)
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'inc':
-                        /*
-                        inc r1
-                        *-/
-                        if(op1.type=='reg'){
-                            store(2,Opcodes.inc,byteOp(op1,new Operand('reg', 0)))
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'sub':
-                        /*
-                        sub r1, M{, r2}
-                        sub r1, I{, r2}
-                        *-/
-                        if(op1.type=='reg'){
-                            if(op2.type=='mem'){
-                                store(4,Opcodes.sub_r_m,byteOp(op1,r2),op2)
-                            }else if(op2.type=='imm'){
-                                store(3,Opcodes.sub_r_i,byteOp(op1,r2),op2)
-                            }else operandError(inst[2],op1,op2,op3)
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'dec':
-                        /*
-                        dec r1
-                        *-/
-                        if(op1.type=='reg'){
-                            store(2,Opcodes.dec,byteOp(op1,new Operand('reg', 0)))
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'jmp':
-                        /*
-                        jmp M/L
-                        *-/
-                        if(op1.type=='mem') store(3,Opcodes.jmp,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.jmp,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'jsr':
-                        /*
-                        jsr M/L
-                        *-/
-                        if(op1.type=='mem') store(3,Opcodes.jsr,op1)    
-                        //else if(op1.type=='label') store(3,Opcodes.jsr,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'rts':
-                        store(1,Opcodes.rts)
-                        break;
-                    case 'cmp':
-                        if(op2.type=='imm') store(3,Opcodes.cmp_r_i,byteOp(op1,r2),op2)
-                        else if(op2.type=='mem') store(4,Opcodes.cmp_r_m,byteOp(op1,r2),op2)
-                        else if(op2.type=='reg') store(2,Opcodes.cmp_r_r,byteOp(op1,op2))
-                        //else if(op2.type=='label') store(4,Opcodes.cmp_r_m,byteOp(op1,r2),op2)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'beq':
-                        if(op1.type=='mem') store(3,Opcodes.beq,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.beq,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'bne':
-                        if(op1.type=='mem') store(3,Opcodes.bne,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.bne,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'blt':
-                        if(op1.type=='mem') store(3,Opcodes.blt,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.blt,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'bge':
-                        if(op1.type=='mem') store(3,Opcodes.bge,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.bge,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'ble':
-                        if(op1.type=='mem') store(3,Opcodes.ble,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.ble,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'bgt':
-                        if(op1.type=='mem') store(3,Opcodes.bgt,op1)
-                        //else if(op1.type=='label') store(3,Opcodes.bgt,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'bcs':
-                        if(op1.type=='mem') store(3,Opcodes.bcs,op1)
-                        else if(op1.type=='label') store(3,Opcodes.bcs,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'bcc':
-                        if(op1.type=='mem') store(3,Opcodes.bcc,op1)
-                        //else if(op1.type=='label') store(Opcodes.bcc,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'and':
-                        if(op1.type=='reg'){
-                            if(op2.type=='imm'){
-                                store(3,Opcodes.and_r_i,byteOp(op1,new Operand('reg', 0)),op2)
-                            }else if(op2.type=='reg'){
-                                store(3,Opcodes.and_r_i,byteOp(op1,op2),new Operand('imm',0))
-                            }else if(op2.type=='mem'){
-                                store(4,Opcodes.and_r_m,byteOp(op1,r2),op2)
-                            }else operandError(inst[2],op1,op2,op3)
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'or':
-                        if(op1.type=='reg'){
-                            if(op2.type=='imm'){
-                                store(3,Opcodes.or_r_i,byteOp(op1,new Operand('reg', 0)),op2)
-                            }else if(op2.type=='reg'){
-                                store(3,Opcodes.or_r_i,byteOp(op1,op2),new Operand('imm',0))
-                            }else if(op2.type=='mem'){
-                                store(4,Opcodes.or_r_m,byteOp(op1,r2),op2)
-                            }else operandError(inst[2],op1,op2,op3)
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'xor':
-                        if(op1.type=='reg'){
-                            if(op2.type=='imm'){
-                                store(3,Opcodes.xor_r_i,byteOp(op1,new Operand('reg', 0)),op2)
-                            }else if(op2.type=='reg'){
-                                store(3,Opcodes.xor_r_i,byteOp(op1,op2),new Operand('imm',0))
-                            }else if(op2.type=='mem'){
-                                store(4,Opcodes.xor_r_m,byteOp(op1,r2),op2)
-                            }else operandError(inst[2],op1,op2,op3)
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'not':
-                        if(op1.type=='reg'){
-                            store(2,Opcodes.not,byteOp(op1,new Operand('reg', 0)))
-                        }else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'clc':
-                        store(1,Opcodes.clc)
-                        break;
-                    case 'sec':
-                        store(1,Opcodes.sec)
-                        break;
-                    case 'psh':
-                        if(op1.type=='mem') store(3,Opcodes.psh_m,op1)
-                        else if(op1.type=='imm') store(2,Opcodes.psh_i,op1)
-                        else if(op1.type=='reg') store(2,Opcodes.psh_r,byteOp(op1,new Operand('reg', 0)))
-                        else if(op1.type=='label') store(3,Opcodes.psh_m,op1)
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'pop':
-                        if(op1.type=='reg') store(2,Opcodes.pop,byteOp(op1,new Operand('reg',0)))
-                        else if(op1.type=='label') store(2,Opcodes.pop,byteOp(new Operand('reg',15),new Operand('reg',0)))
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'shr':
-                        if(op1.type=='reg' && op2.type=='imm') store(2,Opcodes.shr,byteOp(op1,new Operand('reg', (op2.value-1)%16)))
-                        else if(op1.type=='reg') store(2,Opcodes.shr,byteOp(op1,new Operand('reg', 0)))
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'shl':
-                        if(op1.type=='reg' && op2.type=='imm') store(2,Opcodes.shl,byteOp(op1,new Operand('reg', (op2.value-1)%16)))
-                        else if(op1.type=='reg') store(2,Opcodes.shl,byteOp(op1,new Operand('reg', 0)))
-                        else operandError(inst[2],op1,op2,op3)
-                        break;
-                    case 'brk':
-                        store(1,0)
-                        break;
-                    case '.data':
-                        data = parseData(ops)
-                        mem = mem.concat(data)
-                        asmpc += data.length
-                        break;
-                    case '.zeros':
-                        size = ops[0].value
-                        mem = mem.concat(new Array(size).fill(0))
-                        asmpc += size
-                        break;
-                    case '.def':
-                        labels[op1.value] = op2.value
-                        break;
-                    case '.include':
-                        mem = mem.concat(include_sr[op1.value])
-                        labels[op1.value] = asmpc
-                        asmpc += include_sr[op1.value].length
-                        break;
-                    case '.macro':
-                        //console.log(ops)
-                        set_continue = true
-                        macro_ops = ops
-                        break;
-                    case '.endmacro':
-                        //console.log(macro_code)
-                        macros[macro_ops[0].value] = {code:macro_code,params:macro_ops}
-                        macro_code = []
-                        macro_ops = []
-                        set_continue = false
-                        break;
-                    case '.inclbl':
-                        labels[op1.value] += op2.value
-                        break;
-                    case '.declbl':
-                        labels[op1.value] -= op2.value
-                        break;
-                    default:
-                        if(macros.hasOwnProperty(inst[2])){
-                            //console.log(ops)
-                            Pmacro_code = ParseMacro(macros[inst[2]],ops)
-                            code = code.slice(0,i).concat(Pmacro_code.concat(code.slice(i+1)))
-                        }else{
-                            Error('Invalid Opcode: '+inst[2])
-                        }
-                    }
-                }
-            }
-
-            //console.log(mem)
-            mcode = ''
-            for (var i = 0; i < mem.length; i++) {
-                if(isNaN(mem[i])){
-                    if(mem[i].type=='label'){
-                        if(labels[mem[i].value]==undefined) CompileError('Undefined label '+mem[i].value)
-                        word = W2B(labels[mem[i].value])
-                        mcode += String.fromCharCode(word[0])
-                        mcode += String.fromCharCode(word[1])
-                    }else if(mem[i].type=='imm'){
-                        if(isNaN(mem[i].value) || mem[i].form=='string' || mem[i].form=='const'){
-                            if(mem[i].form=='const'){
-                                if(labels[mem[i].value]==undefined) CompileError('Undefined label '+mem[i].value)
-                                mcode += String.fromCharCode(labels[mem[i].value])
-                            }else{
-                                mcode += String.fromCharCode(mem[i].value.charCodeAt(0))
-                            }
-                        }else if(mem[i].value<256 && mem[i].value>=0  || mem[i].form=='int'){
-                            mcode+= String.fromCharCode(mem[i].value)
-                        }else{
-                            CompileError('Error compiling Number')
-                        }
-                    }else if(mem[i].type=='mem'){
-                        if(isNaN(mem[i].value) || mem[i].form=='label'){
-                            word = W2B(labels[mem[i].value])
-                            mcode += String.fromCharCode(word[0])
-                            mcode += String.fromCharCode(word[1])
-                        }else{
-                            word = W2B(mem[i].value)
-                            mcode += String.fromCharCode(word[0])
-                            mcode += String.fromCharCode(word[1])
-                        }
-                    }else if(mem[i].type=='pair'){
-                        mcode+= String.fromCharCode(mem[i].value)
-                    }else if(mem[i].type=='_'){
-                    }else if(mem[i].type=='off'){
-                        pos = mcode.length+256
-                        word = W2B(pos+mem[i].value)
-                        mcode += String.fromCharCode(word[0])
-                        mcode += String.fromCharCode(word[1])
-                    }else{
-                        CompileError('Error compiling operand '+mem[i].type)
-                    }
-                }else{
-                    if(mem[i]>255){
-                        CompileError('Error compiling number')
-                    }else
-                        mcode+= String.fromCharCode(mem[i])
-                }
-            }
-
-            if(mcode){
-                $('#exec').prop('disabled',false)
-            }
-
-            console.log(encodeURI(mcode))
-            //output = encodeURI(JSON.stringify({code:mcode,bp:breakpoints}))
-            //console.log(output)
-            //console.log( JSON.parse(decodeURI(output) ))
-            //console.log(mcode)
-        }*/
     </script>
 </body>
 </html>
