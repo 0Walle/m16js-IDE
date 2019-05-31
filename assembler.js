@@ -52,12 +52,15 @@ function Assembler() {
             
             if(inst[1]){labels[inst[1]] = asmpc+256}
 
+
             if(inst[3]){
                 ops = parseOps(inst[3])
             }else{ops=[]}
 
             if(inst[2]!=undefined){
                 if(inst[2][0]==';') continue
+                
+                mem_breakpoints[asmpc+256] = i;
 
                 let type = this.opcodes_type[inst[2]]
                 //console.log(type,inst[2])
@@ -144,7 +147,6 @@ function Assembler() {
                 mcode += (mem[i]&0xFF).toString(16).padStart(2,0)
             }
         }
-
         return mcode
     }
 }
