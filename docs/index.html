@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>m160 Assembler Docs</title>
+    <link rel="stylesheet" href="github-markdown.css">
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 150px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        .alt-dt{
+            font-style: italic;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="markdown-body">
+    <h1>Documentation for the m160 Assembler</h1>
+    <ul>
+        <li>
+            <a href="#syntax">Syntax</a>
+            <ul>
+                <li><a href="#literals">Literals</a></li>
+                <li><a href="#registers">Registers</a></li>
+                <li><a href="#references">References</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#inst-set">Instruction Set</a>
+            <ul>
+                <li><a href="#inst-load-store">Load and Store instructions</a></li>
+                <li><a href="#inst-arithmetic">Arithmetic instructions</a></li>
+                <li><a href="#inst-bitwise">Bitwise instructions</a></li>
+                <li><a href="#inst-jump-branch">Jump and Branch instructions</a></li>
+                <li><a href="#inst-stack">Stack instructions</a></li>
+                <li><a href="#inst-special">Special instructions</a></li>
+            </ul>
+        </li>
+        <li><a href="#guide-stack">Stack</a></li>
+        <li><a href="#guide-sign-extension">Sign Extension</a></li>
+        <li><a href="#guide-syscall">Syscalls</a></li>
+        <li><a href="#guide-flags">Flags and Conditional jumps</a></li>
+    </ul>
+    <h2 id="syntax">Syntax</h2>
+    <p>The Syntax follows the structure</p>
+    <pre>label:
+    instruction operands    ; comment</pre>
+    <h3 id='literals'>Literals</h3>
+    <p>A literal can be a number or a label. The available number formats are:</p>
+    <pre>213             ; decimal number
+$3f             ; hexadecimal number
+%01001010       ; binary number
+'a'             ; character</pre>
+    <p>Literals can be added or subtracted with expresions, e.g.:</p>
+    <pre>label+1     ; value of label plus 1
+label-3     ; value of label minus 3
+label+$20+4 ; value of label plus 32(0x20) plus 4</pre>
+    <h3 id='registers'>Registers</h3>
+    <p>There are 16 registers in m160 assembly. They are:</p>
+    <pre>r0      ; always zero
+r1      ; r1 to r8 are general purpose registers
+r2
+r3
+r4
+r5
+r6
+r7
+r8
+a0      ; used to indicate the function code for a <a href="#guide-syscall">syscall</a>
+a1      ; argument 1 for syscall
+a2      ; argument 2 for syscall
+fp      ; frame pointer
+sp      ; stack pointer, points to the top of the <a href="#guide-stack">stack</a>
+ip      ; instruction pointer
+rs      ; status register, contains the <a href="#guide-flags">CPU flags</a></pre>
+    <h3 id='references'>References</h3>
+    A reference is equivalent to a pointer. The reference syntax is:
+    <pre>[r2]         ; reference with a register
+[45]         ; reference with a number literal
+[label]      ; reference with a label literal
+[r2+label]   ; reference with a register plus a label
+
+; Invalid syntax!
+[label+r4]   ; the register always come first in a reference
+    </pre>
+    <h2 id="inst-set">Instruction Set</h2>
+    <h3 id="inst-load-store">Load and Store instructions</h3>
+    <h4>LD, LDW, LDB and LDBX:</h4>
+    <p>Load instructions sets the value of a register.</p>
+    <dl>
+        <dt>LD LoaD</dt>
+        <dd>Set register with a literal or another register.
+            <pre>ld r1, 45      ; r1 = 45
+ld r2, r4      ; r4 = r2</pre>
+        </dd>
+        <dt>LDW LoaD Word</dt>
+        <dd>Set register with a 16bit value from memory.
+            <pre>ldw r1, [200]   ; r1 = (word)[200]</pre>
+        </dd>
+        <dt>LDB LoaD Byte</dt>
+        <dd>Set register with a 8bit value from memory.
+            <pre>ldb r1, [200]   ; r1 = (byte)[200]</pre>
+        </dd>
+        <dt>LDBX LoaD Byte and sign eXtend</dt>
+        <dd>Set register with a 8bit value from memory and sign extend.
+            <pre>ldbx r1, [200]  ; r1 = (signed byte)[200]</pre>
+        </dd>
+    </dl>
+    <i><a href="#guide-sign-extension">What is sign extension?</a></i>
+    <h4>STR, STRW and STRB:</h4>
+    <p>Store instructions stores the value of a register in the memory.</p>
+    <dl>
+        <dt>STR SToRe</dt>
+        <dd>Set a memory address with a 8bit literal.
+            <pre>str [200], 58      ; [200] = 58</pre>
+        </dd>
+        <dt>STRW SToRe Word</dt>
+        <dd>Set a memory address with a 16bit value from a register.
+            <pre>strw [200], r1     ; [200] = r1</pre>
+        </dd>
+        <dt>STRB SToRe Byte</dt>
+        <dd>Set a memory address with a 8bit value from a register.
+            <pre>strb [200], r1     ; [200] = (byte)r1</pre>
+        </dd>
+    </dl>
+    <h3 id="inst-arithmetic">Arithmetic instructions</h3>
+    <h4>ADD, ADDW, ADDB and ADDBX:</h4>
+    <p>Add a value to a register.</p>
+    <dl>
+        <dt>ADD</dt>
+        <dd>Adds a literal or another register to a register.
+            <pre>add r1, 45      ; r1 += 45
+add r2, r4      ; r2 += r4</pre>
+        </dd>
+        <dt>ADDW ADD Word</dt>
+        <dd>Adds a 16bit value from memory to a register.
+            <pre>addw r1, [200]   ; r1 += [200]</pre>
+        </dd>
+        <dt>ADDB ADD Byte</dt>
+        <dd>Adds a 8bit value from memory to a register.
+            <pre>addb r1, [200]   ; r1 += (byte)[200]</pre>
+        </dd>
+        <dt>ADDBX ADD Byte and sign eXtend</dt>
+        <dd>Adds a 8bit value from memory to a register and sign extend.
+            <pre>addbx r1, [200]  ; r1 += (signed byte)[200]</pre>
+        </dd>
+    </dl>
+    <h4>ADC, ADCW, ADCB and ADCBX:</h4>
+    <p>Add a value to a register with carry.</p>
+    <dl>
+        <dt>ADC ADd with Carry</dt>
+        <dd>Adds a literal or another register to a register with carry.
+            <pre>adc r1, 45      ; r1 += 45 + Carry
+adc r2, r4      ; r1 += r4 + Carry</pre>
+        </dd>
+        <dt>ADCW ADd Word with Carry</dt>
+        <dd>Adds a 16bit value from memory to a register with carry .
+            <pre>adcw r1, [200]   ; r1 += [200] + Carry</pre>
+        </dd>
+        <dt>ADCB ADd Byte with Carry</dt>
+        <dd>Adds a 8bit value from memory to a register with carry .
+            <pre>adcb r1, [200]   ; r1 += (byte)[200] + Carry</pre>
+        </dd>
+        <dt>ADCBX ADd Byte with Carry and sign eXtend</dt>
+        <dd>Adds a 8bit value from memory to a register with carry and sign extend.
+            <pre>adcbx r1, [200]  ; r1 += (signed byte)[200] + Carry</pre>
+        </dd>
+    </dl>
+
+    <h4>SUB, SUBW, SUBB and SUBBX:</h4>
+    <p>Subtract a value from a register.</p>
+    <dl>
+        <dt>SUB SUBtract</dt>
+        <dd>Subtracts a literal or another register from a register.
+            <pre>sub r1, 45      ; r1 -= 45
+sub r2, r4      ; r2 -= r4</pre>
+        </dd>
+        <dt>SUBW SUBtract Word</dt>
+        <dd>Subtracts a 16bit value from memory from a register.
+            <pre>subw r1, [200]   ; r1 -= [200]</pre>
+        </dd>
+        <dt>SUBB SUBtract Byte</dt>
+        <dd>Subtracts a 8bit value from memory from a register.
+            <pre>subb r1, [200]   ; r1 -= (byte)[200]</pre>
+        </dd>
+        <dt>SUBBX SUBtract Byte and sign eXtend</dt>
+        <dd>Subtracts a 8bit value from memory from a register and sign extend.
+            <pre>subbx r1, [200]  ; r1 -= (signed byte)[200]</pre>
+        </dd>
+    </dl>
+
+    <h4>SBC, SBCW, SBCB and SBCBX:</h4>
+    <p>Subtract a value from a register with carry.</p>
+    <dl>
+        <dt>SBC SuBtract with Carry</dt>
+        <dd>Subtracts a literal or another register from a register with carry.
+            <pre>sbc r1, 45      ; r1 -= 45 - ~Carry
+sbc r2, r4      ; r2 -= r4 - ~Carry</pre>
+        </dd>
+        <dt>SBCW SuBtract Word with Carry</dt>
+        <dd>Subtracts a 16bit value from memory from a register with carry.
+            <pre>sbcw r1, [200]   ; r1 -= [200] - ~Carry</pre>
+        </dd>
+        <dt>SBCB SuBtract Byte with Carry</dt>
+        <dd>Subtracts a 8bit value from memory from a register with carry.
+            <pre>sbcb r1, [200]   ; r1 -= (byte)[200] - ~Carry</pre>
+        </dd>
+        <dt>SBCBX SuBtract Byte with Carry and sign eXtend</dt>
+        <dd>Subtracts a 8bit value from memory from a register with carry and sign extend.
+            <pre>sbcbx r1, [200]  ; r1 -= (signed byte)[200] - ~Carry</pre>
+        </dd>
+    </dl>
+
+    <h4>INC and INCB:</h4>
+    <p>Increment a register or one byte of memory.</p>
+    <dl>
+        <dt>INC INCrement</dt>
+        <dd>Increments a register by 1.
+            <pre>inc r1           ; ++r1</pre>
+        </dd>
+        <dt>INCB INCrement memory Byte</dt>
+        <dd>Increments one byte of memory by 1.
+            <pre>incb [200]       ; ++(byte)[200]</pre>
+        </dd>
+    </dl>
+
+    <h4>DEC and DECB:</h4>
+    <p>Decrement a register or one byte of memory.</p>
+    <dl>
+        <dt>DEC DECrement</dt>
+        <dd>Decrements a register by 1.
+            <pre>dec r1           ; --r1</pre>
+        </dd>
+        <dt>DEB DECrement memory Byte</dt>
+        <dd>Decrements one byte of memory by 1.
+            <pre>decb [200]       ; --(byte)[200]</pre>
+        </dd>
+    </dl>
+
+    <h4 class='alt-dt'>MUL MULtiply</h4>
+    <p>Multiply a register by a literal or another register, the 32bit result is truncated to 16bit.</p>
+    <pre>mul r1, 2         ; r1 *= 2
+mul r1, r4        ; r1 *= r4</pre>
+    <h4 class='alt-dt'>DIV Divide</h4>
+    <p>Integer divide a register by a literal or another register.</p>
+    <pre>div r1, 2         ; r1 /= 2
+div r1, r4        ; r1 /= r4</pre>
+    <h4 class='alt-dt'>MOD MODulo</h4>
+    <p>Integer divide a register by a literal or another register and store the remainder in the register.</p>
+    <pre>mod r1, 2         ; r1 %= 2
+mod r1, r4        ; r1 %= r4</pre>
+
+    <h3 id="inst-bitwise">Bitwise instructions</h3>
+    <h4>AND, ANDW, ANDB and ANDBX:</h4>
+    <p>Bitwise AND a register.</p>
+    <dl>
+        <dt>AND</dt>
+        <dd>Bitwise and a literal or another register to a register.
+            <pre>and r1, 45      ; r1 &= 45
+and r2, r4      ; r1 &= r4</pre>
+        </dd>
+        <dt>ANDW AND Word</dt>
+        <dd>Bitwise and a 16bit value from memory to a register.
+            <pre>andw r1, [200]   ; r1 &= [200]</pre>
+        </dd>
+        <dt>ANDB AND Byte</dt>
+        <dd>Bitwise and a 8bit value from memory to a register.
+            <pre>andb r1, [200]   ; r1 &= (byte)[200]</pre>
+        </dd>
+        <dt>ANDBX AND Byte and sign eXtend</dt>
+        <dd>Bitwise and a 8bit value from memory to a register and sign extend.
+            <pre>andbx r1, [200]  ; r1 &= (signed byte)[200]</pre>
+        </dd>
+    </dl>
+    <h4>OR, ORW, ORB and ORBX:</h4>
+    <p>Bitwise OR a register.</p>
+    <dl>
+        <dt>OR</dt>
+        <dd>Bitwise or a literal or another register to a register.
+            <pre>or r1, 45      ; r1 |= 45
+or r2, r4      ; r1 |= r4</pre>
+        </dd>
+        <dt>ORW OR Word</dt>
+        <dd>Bitwise or a 16bit value from memory to a register.
+            <pre>orw r1, [200]   ; r1 |= [200]</pre>
+        </dd>
+        <dt>ORB OR Byte</dt>
+        <dd>Bitwise or a 8bit value from memory to a register.
+            <pre>orb r1, [200]   ; r1 |= (byte)[200]</pre>
+        </dd>
+        <dt>ORBX OR Byte and sign eXtend</dt>
+        <dd>Bitwise or a 8bit value from memory to a register and sign extend.
+            <pre>orbx r1, [200]  ; r1 |= (signed byte)[200]</pre>
+        </dd>
+    </dl>
+
+    <h4>XOR, XORW, XORB and XORBX:</h4>
+    <p>Bitwise XOR a register.</p>
+    <dl>
+        <dt>XOR</dt>
+        <dd>Xors a literal or another register to a register.
+            <pre>xor r1, 45      ; r1 ^= 45
+xor r2, r4      ; r1 ^= r4</pre>
+        </dd>
+        <dt>XORW XOR Word</dt>
+        <dd>Xors a 16bit value from memory to a register.
+            <pre>xorw r1, [200]   ; r1 ^= [200]</pre>
+        </dd>
+        <dt>XORB XOR Byte</dt>
+        <dd>Xors a 8bit value from memory to a register.
+            <pre>xorb r1, [200]   ; r1 ^= (byte)[200]</pre>
+        </dd>
+        <dt>XORBX XOR Byte and sign eXtend</dt>
+        <dd>Xors a 8bit value from memory to a register and sign extend.
+            <pre>xorbx r1, [200]  ; r1 ^= (signed byte)[200]</pre>
+        </dd>
+    </dl>
+
+    <h4 class='alt-dt'>NOT</h4>
+    <p>Bitwise NOT a register.</p>
+    <pre>not r1        ; r1 = ~r1</pre>
+    <h4 class='alt-dt'>SHR SHift Right</h4>
+    <p>Bitwise shift to right a register by a literal or another register.</p>
+    <pre>shr r1, 2         ; r1 >>= 2<br>shr r1, r4        ; r1 >>= r4</pre>
+    <h4 class='alt-dt'>SHL SHift Left</h4>
+    <p>Bitwise shift to left a register by a literal or another register.</p>
+    <pre>shl r1, 2         ; r1 <<= 2<br>shl r1, r4        ; r1 <<= r4</pre>
+    <h4 class='alt-dt'>ROR ROtate Right</h4>
+    <p>Bitwise rotate to right a register by a literal or another register.</p>
+    <pre>ror r1, 2<br>ror r1, r4</pre>
+    <h4 class='alt-dt'>ROL ROtate Left</h4>
+    <p>Bitwise rotate to left a register by a literal or another register.</p>
+    <pre>rol r1, 2<br>rol r1, r4</pre>
+    <h4 class='alt-dt'>EXS EXtend Sign</h4>
+    <p>Sign extend a register.</p>
+    <pre>exs r1</pre>
+    
+
+    <h3 id="inst-jump-branch">Jump and Branch instructions</h3>
+    <h4 class='alt-dt'>JMP JuMP</h4>
+    <p>Jump to an address.</p>
+    <pre>jmp label      ; jump to label<br>jmp r2         ; jump to the address pointed by r2</pre>
+    <h4 class='alt-dt'>JSR Jump to SubRoutine</h4>
+    <p>Store the current address on the stack and jump to another address.</p>
+    <pre>jsr label<br>jsr r2</pre>
+    <h4 class='alt-dt'>RTS ReTurn from Subroutine</h4>
+    <p>Pop an address from the stack and jump to it.</p>
+    <pre>rts</pre>
+
+    <i><a href="#guide-flags">About conditional jumps</a></i>
+
+    <h4>CMP, CMPW, CMPB and CMPBX:</h4>
+    <p>Compare values by subtraction.</p>
+    <dl>
+        <dt>CMP CoMPare</dt>
+        <dd>Comapre a literal or another register and a register.
+            <pre>cmp r1, 45      ; compare 45 and r1
+cmp r2, r4      ; compare the value of r4 and r2</pre>
+        </dd>
+        <dt>CMPW CMP Word</dt>
+        <dd>Compare a 16bit value from memory and a register.
+            <pre>cmpw r1, [200]</pre>
+        </dd>
+        <dt>CMPB CMP Byte</dt>
+        <dd>Compare a 8bit value from memory and a register.
+            <pre>cmpb r1, [200]</pre>
+        </dd>
+        <dt>CMPBX CMP Byte and sign eXtend</dt>
+        <dd>Compare a sign extended 8bit value from memory and a register.
+            <pre>cmpbx r1, [200]</pre>
+        </dd>
+    </dl>
+
+    <h4>JEQ and BEQ:</h4>
+    <p>Jump/branch if equals.</p>
+    <dl><dt>JEQ Jump if EQuals</dt><dd>Jump to an address if flag Z is set.<pre>jeq loop      ; jump to loop if flag Z is set</pre></dd>
+    <dt>BEQ Branch if EQuals</dt><dd>Jump an offset if flag Z is set.<pre>beq 4   ; jump 4 bytes forward if flag Z is set</pre></dd></dl>
+
+    <h4>JNE and BNE:</h4>
+    <p>Jump/branch if not equals.</p>
+    <dl><dt>JNE Jump if Not Equals</dt><dd>Jump to an address if flag Z is clear.<pre>jne loop      ; jump to loop if flag Z is clear</pre></dd>
+    <dt>BNE Branch if Not Equals</dt><dd>Jump an offset if flag Z is clear.<pre>bne 4   ; jump 4 bytes forward if flag Z is clear</pre></dd></dl>
+
+    <h4>JLT and BLT:</h4>
+    <p>Jump/branch if less than.</p>
+    <dl>
+        <dt>JLT Jump if Less Than</dt>
+        <dd>Jump to an address if flag N is set.
+            <pre>jlt loop      ; jump to loop if flag N is set</pre>
+        </dd>
+        <dt>BLT Branch if Less Than</dt>
+        <dd>Jump an offset if flag N is set.
+            <pre>blt 4   ; jump 4 bytes forward if flag N is set</pre>
+        </dd>
+    </dl>
+    <h4>JGE and BGE:</h4>
+    <p>Jump/branch if greater than or equal.</p>
+    <dl>
+        <dt>JGE Jump if Greater than or Equal</dt>
+        <dd>Jump to an address if flag N is clear.
+            <pre>jge loop      ; jump to loop if flag N is clear</pre>
+        </dd>
+        <dt>BGE Branch if Greater than or Equal</dt>
+        <dd>Jump an offset if flag N is clear.
+            <pre>bge 4   ; jump 4 bytes forward if flag N is clear</pre>
+        </dd>
+    </dl>
+    <h4>JLE and BLE:</h4>
+    <p>Jump/branch if less than or equal.</p>
+    <dl>
+        <dt>JLE Jump if Less than or Equal</dt>
+        <dd>Jump to an address if flags Z or N are set.
+            <pre>jle loop      ; jump to loop if flags Z or N are set</pre>
+        </dd>
+        <dt>BLE Branch if Less than or Equal</dt>
+        <dd>Jump an offset if flags Z or N are set.
+            <pre>ble 4   ; jump 4 bytes forward if flags Z or N are set</pre>
+        </dd>
+    </dl>
+    <h4>JGT and BGT:</h4>
+    <p>Jump/branch if greater than.</p>
+    <dl>
+        <dt>JGT Jump if Greater Than</dt>
+        <dd>Jump to an address if flags Z and N are clear.
+            <pre>jgt loop      ; jump to loop if flags Z and N are clear</pre>
+        </dd>
+        <dt>BGT Branch if Greater Than</dt>
+        <dd>Jump an offset if flags Z and N are clear.
+            <pre>bgt 4   ; jump 4 bytes forward if flags Z and N are clear</pre>
+        </dd>
+    </dl>
+
+    <h4>JCS and BCS:</h4>
+    <p>Jump/branch if carry is set.</p>
+    <dl>
+        <dt>JCS Jump if Carry Set</dt>
+        <dd>Jump to an address if flag C is set.
+            <pre>jcs loop</pre>
+        </dd>
+        <dt>BCS Branch if Carry Set</dt>
+        <dd>Jump an offset if flag C is set.
+            <pre>bcs 4</pre>
+        </dd>
+    </dl>
+
+    <h4>JCC and BCC:</h4>
+    <p>Jump/branch if carry is clear.</p>
+    <dl>
+        <dt>JCC Jump if Carry Clear</dt>
+        <dd>Jump to an address if flag C is clear.
+            <pre>jcc loop</pre>
+        </dd>
+        <dt>BCC Branch if Carry Clear</dt>
+        <dd>Jump an offset if flag C is clear.
+            <pre>bcc 4</pre>
+        </dd>
+    </dl>
+
+    <h3 id="inst-stack">Stack instructions</h3>
+
+    <i><a href="#guide-stack">About the stack</a></i>
+
+    <h4>PSHW and PSHB:</h4>
+    <p>Push a value to stack.</p>
+    <dl>
+        <dt>PSHW PuSH Word</dt>
+        <dd>Push a literal or a register to the stack.
+            <pre>psh 430<br>psh r1</pre>
+        </dd>
+        <dt>PSHB PuSH Byte</dt>
+        <dd>Push a 8bit literal or register to the stack.
+            <pre>psh 23<br>psh r1</pre>
+        </dd>
+    </dl>
+
+    <h4>POPW and POPB:</h4>
+    <p>Pop a value from the stack.</p>
+    <dl>
+        <dt>POPW POP Word</dt>
+        <dd>Pop a 16bit value from the stack to a register.
+            <pre>pop r1</pre>
+        </dd>
+        <dt>POPB POP Byte</dt>
+        <dd>Pop a 8bit value from the stack to a register.
+            <pre>pop r1</pre>
+        </dd>
+    </dl>
+
+    <h3 id="inst-special">Special instructions</h3>
+
+    <h4 class='alt-dt'>SYS SYScall</h4>
+    <p>Do a syscall.</p>
+    <pre>sys</pre>
+
+    <i><a href="#guide-syscall">About syscalls</a></i>
+
+    <h4 class='alt-dt'>BRK BReaK</h4>
+    <p>Exit the program.</p>
+    <pre>brk</pre>
+    <h2 id="guide-stack">Stack</h2>
+    <p>The Stack is an empty descending stack. The register sp(stack pointer) points to the top of the stack.</p>
+    <p>In a push operation a value is first stored in the address of the stack pointer, then the stack pointer is decremented. In a pop operation the stack pointer is incremented and the value pointed by the stack pointer is loaded in a register.</p>
+    <h2 id="guide-sign-extension">Sign Extension</h2>
+    <p>Sign extension is an operation to increase the number of bits of a number preserving the sign. With this signed 8bit numbers can be converted to signed 16bit.</p>
+    <p>For example:</p>
+    <pre>With 0010 1110 (46)
+Sign extended: 0000 0000 0010 1110 (46)
+Zero extended: 0000 0000 0010 1110 (46)
+
+With 1001 0110 (-106)
+Sign extended: 1111 1111 1001 0110 (-106)
+Zero extended: 0000 0000 1001 0110 (150)
+</pre>
+    <h2 id="guide-syscall">Syscall</h2>
+    <p>A syscall is a call to a special function implemented in the CPU. When a syscall is called the number in the a0 register determines which function is executed. The registers a1 and a2 can be used as arguments or return values for the function.</p>
+    <p>The javascript version of the CPU has the following syscalls:</p>
+    <table>
+        <tr>
+            <th>Function</th>
+            <th>a0 Code</th>
+            <th>Arguments</th>
+            <th>Result</th>
+        </tr>
+        <tr>
+            <td>Print number</td>
+            <td>17</td>
+            <td>a1: the number to print</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>Print char</td>
+            <td>19</td>
+            <td>a1: the char to print</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>Print string</td>
+            <td>20</td>
+            <td>a1: the address of a null terminated string</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>Random number</td>
+            <td>33</td>
+            <td>-</td>
+            <td>a1: 16bit random number</td>
+        </tr>
+    </table>
+    <h2 id="guide-flags">Flags and Conditional jumps</h2>
+    <p>The m160 flags are stored in diferent bits of the register rs(status register).</p>
+    <p>The Negative flag is set when an operation returns a negative number.<br>
+    The Zero flag is set when an operation returns zero.<br>
+    The Carry flag is set when an operation returns a number greater than 16 bits.<br>
+    The Halt flag is set when an BRK instruction is used.</p>
+    <p>They are stored in this form:</p>
+    <pre>
+rs: 0000 0000 0000 0000
+                   ^^^^
+                   |||N flag
+                   ||Z flag
+                   |C flag
+                   H flag</pre>
+    <p>The other bits are unused.</p>
+    <p>The CMP instruction does a subtraction without storing the result and this modifies the flags preserving the register values. Then the flags can be used to do a conditional jump. For example:</p>
+    <pre>
+cmp r1, 7   ; compare r1 and 7
+jlt cond    ; jump to cond if less than
+
+
+; this is equivalent to
+; if(r1 < 7) goto cond
+</pre>
+    <p>if r1 isn't less than 7 the program continues. Conditional jumps can be used to create loops and control flow.</p>
+</body>
+</html>
