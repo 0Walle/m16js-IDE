@@ -2,6 +2,8 @@ function Assembler() {
     
     this.line = 0
 
+    this.labels = {}
+
     this.opcodes_type = {
         ldw: 2, addw: 2, subw: 2, andw: 2, orw: 2, xorw: 2, cmpw: 2,
         strw: 12,
@@ -32,7 +34,7 @@ function Assembler() {
     this.assemble = (code) =>{
         code = code.split('\n')
 
-        labels = {}
+        this.labels = {}
 
         mem = []
         asmpc = 0
@@ -50,7 +52,7 @@ function Assembler() {
 
             inst = code[i].match(/^[\t ]*(?:([a-z_\d]*)[:])?(?:\s*(.?[a-z]+)(?:[\t ]+(.*))?)?/i)
             
-            if(inst[1]){labels[inst[1]] = asmpc+256}
+            if(inst[1]){this.labels[inst[1]] = asmpc+256}
 
 
             if(inst[3]){
@@ -130,13 +132,13 @@ function Assembler() {
                 let lbl = 0;
                 let total = 0;
                 if(mem[i].name.id){
-                    lbl = labels[mem[i].name.id]
+                    lbl = this.labels[mem[i].name.id]
                     if(lbl==undefined) Error("Undefined label " + mem[i].name.id)
                 }
                 if(mem[i].name.neg){lbl = -lbl}
                 for (var j = 0; j < mem[i].exprs.length; j++) {
                     let loc;
-                    loc = labels[mem[i].exprs[j].name.id]
+                    loc = this.labels[mem[i].exprs[j].name.id]
                     if(loc==undefined) Error("Undefined label " + mem[i].exprs[j].name.id)
                     if(mem[i].exprs[j].name.neg) loc = -loc
                     total += loc

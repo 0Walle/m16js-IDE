@@ -174,21 +174,31 @@
             <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('watcher')"></span>
         </div>
         <table class='widget-cont' style="font-family: consolas;">
-            <tr><td>r1</td><td id="watcher-r1">0000</td></tr>
-            <tr><td>r2</td><td id="watcher-r2">0000</td></tr>
-            <tr><td>r3</td><td id="watcher-r3">0000</td></tr>
-            <tr><td>r4</td><td id="watcher-r4">0000</td></tr>
-            <tr><td>r5</td><td id="watcher-r5">0000</td></tr>
-            <tr><td>r6</td><td id="watcher-r6">0000</td></tr>
-            <tr><td>r7</td><td id="watcher-r7">0000</td></tr>
-            <tr><td>r8</td><td id="watcher-r8">0000</td></tr>
-            <tr><td>a0</td><td id="watcher-rb">0000</td></tr>
-            <tr><td>a1</td><td id="watcher-ra">0000</td></tr>
-            <tr><td>a2</td><td id="watcher-r9">0000</td></tr>
-            <tr><td>fp</td><td id="watcher-rc">0000</td></tr>
-            <tr><td>sp</td><td id="watcher-rd">0000</td></tr>
-            <tr><td>ip</td><td id="watcher-re">0000</td></tr>
-            <tr><td>rs</td><td id="watcher-rf">0000</td></tr>
+            <tr><td style="padding-right: 20px;">r1</td><td id="watcher-r1" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r2</td><td id="watcher-r2" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r3</td><td id="watcher-r3" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r4</td><td id="watcher-r4" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r5</td><td id="watcher-r5" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r6</td><td id="watcher-r6" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r7</td><td id="watcher-r7" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r8</td><td id="watcher-r8" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">a0</td><td id="watcher-rb" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">a1</td><td id="watcher-ra" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">a2</td><td id="watcher-r9" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">fp</td><td id="watcher-rc" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">sp</td><td id="watcher-rd" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">ip</td><td id="watcher-re" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">rs</td><td id="watcher-rf" style="min-width: 120px;">0000 NUL (0)</td></tr>
+        </table>
+    </div>
+    <div id="lblist" class="widget" style='display: none;left: calc(50vw - 50px);top: 20vh;'>
+        <div class='widget-header'>
+            <span style="vertical-align: top;">Labels</span>
+            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('lblist');$('#lblwidbutton')[0].style['border-bottom'] = null"></span>
+            <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('lblist')"></span>
+        </div>
+        <table id="lblisttable" class='widget-cont' style="font-family: consolas;">
+            <!-- <tr><td style="padding-right: 20px;">r1</td><td id="watcher-r1" style="min-width: 120px;"></td></tr> -->
         </table>
     </div>
     <table id='editor'>
@@ -224,6 +234,9 @@
                 </div>
                 <div class='button' id="regwidbutton" onclick="showWidget('watcher');$('#regwidbutton')[0].style['border-bottom'] = '2px solid white'">
                     <span class="iconify" data-icon="mdi:chip" data-inline="false" style="top: -2px;"></span>
+                </div>
+                <div class='button' id="lblwidbutton" onclick="showWidget('lblist');$('#lblwidbutton')[0].style['border-bottom'] = '2px solid white'">
+                    <span class="iconify" data-icon="mdi-format-list-bulleted-square" data-inline="false" style="top: -2px;"></span>
                 </div>
             </div>
             <div class='button' id="docsbutton" onclick="window.open('docs/index.html', '_blank')" style="float: right;">
@@ -314,9 +327,12 @@ loop:
         function runcode() {
             if($("#runbutton")[0].getAttribute("disabled")=='1') return;
             if(!running){
-                running = true
-                $("#runbutton")[0].setAttribute("disabled",1);
+                svm.mem.fill(0)
                 svm.loadHex(mach)
+                running = true
+                $("#debugbutton")[0].setAttribute("disabled",'1');
+                $("#runbutton")[0].setAttribute("disabled",1);
+                $("#buildbutton")[0].setAttribute("disabled",'1');
                 svm.set_reg(14,256)
                 svm.set_reg(15,0)
                 svm.set_flag(3,0)
@@ -328,6 +344,8 @@ loop:
                         svm.step()
                     }
                     $("#runbutton")[0].setAttribute("disabled",0);
+                    $("#buildbutton")[0].setAttribute("disabled",'0');
+                    $("#debugbutton")[0].setAttribute("disabled",'0');
                     running = false
                 },0)
             }else if(running){
@@ -356,8 +374,11 @@ loop:
         }
 
         function stopDebug() {
+            widgets_Z = 10
             closeWidget("watcher");
+            closeWidget("lblist");
             $('#regwidbutton')[0].style['border-bottom'] = null
+            $('#lblwidbutton')[0].style['border-bottom'] = null
             clearInterval(debugRunId);
             debugRunId=0;
             debugging = false;
@@ -367,6 +388,7 @@ loop:
             $("#runstepbutton-step")[0].style["display"] = "none";
             $("#runstepbutton-play")[0].style["display"] = null;
             $("#runbutton")[0].setAttribute("disabled",'0');
+            $("#buildbutton")[0].setAttribute("disabled",'0');
             $("#stepbutton")[0].setAttribute("disabled",'1');
             $("#debugbutton")[0].style["border-bottom"] = null;
             $("#debug-panel")[0].style['display'] = "none";
@@ -377,19 +399,21 @@ loop:
         }
 
         function initDebug() {
+            $("#buildbutton")[0].setAttribute("disabled",'1');
             debugInit = true;
             $("#runbutton")[0].setAttribute("disabled",'1');
             $("#stepbutton")[0].setAttribute("disabled",'0');
             $("#debugbutton")[0].style["border-bottom"] = "2px solid white";
             $("#runstepbutton-play")[0].style["display"] = "none";
             $("#runstepbutton-step")[0].style["display"] = null;
+            svm.mem.fill(0)
             svm.loadHex(mach)
             svm.set_reg(14,256)
             svm.set_reg(15,0)
             svm.set_flag(3,0)
             for (var i = 1; i < 13; i++) {
                 svm.set_reg(i,0)
-                $("#watcher-r"+ i.toString(16))[0].innerHTML = svm.get_reg(i).toString(16).padStart(4,'0')
+                $("#watcher-r"+ i.toString(16))[0].innerHTML = svm.get_reg(i).toString(16).padStart(4,'0')+" NUL (0)"
             }
             debugLastActiveLine = mem_breakpoints[svm.get_reg(14)];
             editor.addLineClass(debugLastActiveLine,"background","debug-active-line")
@@ -402,13 +426,16 @@ loop:
 
         function stepCode() {
             if(debugInit){
-                editor.removeLineClass(debugLastActiveLine,"background","debug-active-line")
+                if(debugLastActiveLine!=undefined) editor.removeLineClass(debugLastActiveLine,"background","debug-active-line")
                 svm.step()
                 for (var i = 1; i < 16; i++) {
-                    $("#watcher-r"+ i.toString(16))[0].innerHTML = svm.get_reg(i).toString(16).padStart(4,'0')
+                    num = svm.get_reg(i)
+                    charcode = num >= 0x20 && num <= 0x7e ? "'"+String.fromCharCode(num)+"'" : asciiCode(num)
+                    $("#watcher-r"+ i.toString(16))[0].innerHTML = `${num.toString(16).padStart(4,'0')} ${charcode} (${num})`
                 }
                 debugLastActiveLine = mem_breakpoints[svm.get_reg(14)];
-                editor.addLineClass(debugLastActiveLine,"background","debug-active-line")
+                if(debugLastActiveLine==undefined) debugLastActiveLine = -1
+                if(debugLastActiveLine) editor.addLineClass(debugLastActiveLine,"background","debug-active-line")
                 if(svm.get_flag(3)){
                     stopDebug();
                 }
@@ -467,14 +494,18 @@ loop:
         }
 
         function build() {
+            if($("#buildbutton")[0].getAttribute("disabled")=='1') return;
             $("#runbutton")[0].setAttribute("disabled",'0');
             $("#debugbutton")[0].setAttribute("disabled",'0');
-            if($("#buildbutton")[0].getAttribute("disabled")=='1') return;
             savecode();
             let t0 = performance.now();
             mach = asmer.assemble(editor.getValue())
             let t1 = performance.now();
             terminal("Build finished in "+((t1-t0)/1000).toFixed(3)+"s\n\n")
+            $("#lblisttable")[0].innerHTML = ""
+            for(lbl in asmer.labels){
+                $("#lblisttable")[0].innerHTML += `<tr><td style="padding-right: 20px;">${lbl}</td><td>${asmer.labels[lbl].toString(16).padStart(4,"0")}</td></tr>`
+            }
         }
 
         function downloadCode() {
@@ -492,7 +523,9 @@ loop:
             }, 0); 
         }
 
+        widgets_Z = 10
         dragElement(document.getElementById("watcher"));
+        dragElement(document.getElementById("lblist"));
         function dragElement(elmnt) {
           var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
           elmnt.children[0].onmousedown = dragMouseDown;
@@ -500,29 +533,25 @@ loop:
           function dragMouseDown(e) {
             e = e || window.event;
             e.preventDefault();
-            // get the mouse cursor position at startup:
             pos3 = e.clientX;
             pos4 = e.clientY;
             document.onmouseup = closeDragElement;
-            // call a function whenever the cursor moves:
             document.onmousemove = elementDrag;
+            elmnt.style["z-index"] = ++widgets_Z;
           }
 
           function elementDrag(e) {
             e = e || window.event;
             e.preventDefault();
-            // calculate the new cursor position:
             pos1 = pos3 - e.clientX;
             pos2 = pos4 - e.clientY;
             pos3 = e.clientX;
             pos4 = e.clientY;
-            // set the element's new position:
             elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
             elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
           }
 
           function closeDragElement() {
-            // stop moving when mouse button is released:
             document.onmouseup = null;
             document.onmousemove = null;
           }
@@ -544,6 +573,15 @@ loop:
 
         function showWidget(id) {
             document.getElementById(id).style['display'] = null;
+        }
+
+        function asciiCode(num) {
+            if(num==0)  return 'NUL'
+            if(num==9)  return 'TAB'
+            if(num==10) return 'LF&nbsp;'
+            if(num==13) return 'CR&nbsp;'
+            if(num==27) return 'ESC'
+            return '---'
         }
     </script>
 </body>

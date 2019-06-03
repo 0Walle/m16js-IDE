@@ -147,8 +147,9 @@ function VirtualMachine() {
         cmd = this.get_reg(11)
         if(cmd==0x11) terminal(this.get_reg(10)&0xFFFF)
         if(cmd==0x13) terminal(String.fromCharCode(this.get_reg(10)))
-        if(cmd==0x14){while(this.mem[this.regs[10]]!=0){terminal(String.fromCharCode(this.regs[10]++));}}
+        if(cmd==0x14){while(this.mem[this.regs[10]]!=0){terminal(String.fromCharCode(this.mem[this.regs[10]++]));}}
         if(cmd==0x21) this.set_reg(10,Math.floor(Math.random()*0xFFFF))
+        if(cmd==0x50) terminal(this.mem.slice(this.regs[10],this.regs[9]).toString()+'\n')
     }
 
     this.step = () => {
