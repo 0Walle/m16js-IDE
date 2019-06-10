@@ -32,7 +32,7 @@ function parseOps(ops){
         ops = ops.substr(1).trim()
         reg = 0;
         var match;
-        if(match = /(r[a-fs\d]|a[0-2]|sp|fp|ip)\b/.exec(ops)){
+        if(match = /^(r[a-fs\d]|a[0-2]|sp|fp|ip)\b/.exec(ops)){
             reg = regs_dict[match[1]]
             ops = ops.substr(match.index+match[0].length)
             ops = ops.trim()
@@ -95,7 +95,7 @@ function parseOps(ops){
             }
         }
         result = result.concat(inter)
-    }else if(match = /(r[a-fs\d]|a[0-2]|sp|fp|ip)\b/.exec(ops)){//reg
+    }else if(match = /^(r[a-fs\d]|a[0-2]|sp|fp|ip)\b/.exec(ops)){//reg
         result.push(new Operand(2,'',0,regs_dict[match[1]]));
         result = result.concat(parseOps(ops.substr(match[1].length)))
     }else {//expr

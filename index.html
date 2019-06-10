@@ -16,13 +16,15 @@
         body{
             margin: 0px;
             height: 100vh;
-            overflow: hidden;
+            /* overflow: hidden; */
+            background:#1a1a1a;
         }
 
         #editor{
             width: 100%;
             height: 100%;
-            border-spacing: 0px;
+            display: flex;
+            flex-direction: column;
         }
 
         #toolbar{
@@ -41,19 +43,33 @@
             padding: 0px;
             vertical-align: top;
             height: 150px;
+            /* max-height: 150px; */
         }
 
         #console_pre{
             color: white;
             padding: 0px;
             margin: 0px;
-            height: 150px;
-            width: 100vw;
-            max-height: 150px;
             font-size: 14px;
-            overflow-y: scroll;
             overflow-wrap: break-word;
             white-space: pre-wrap;
+        }
+
+        #console_input{
+            padding: 0px;
+            border: none;
+            height: 17px;
+            color: white;
+            outline: none;
+            width: 100%;
+            background: #1a1a1a;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        #consolecontainer{
+            height: 128px;
+            overflow-y: scroll;
         }
 
         #consolebar{
@@ -122,6 +138,11 @@
             height: 40px;
         }
 
+        #lblisttablecontainer{
+            max-height: 300px;
+            overflow-y: scroll;
+        }
+
         .widget{
             font-family: "Roboto", sans-serif;
             font-size: 14px;
@@ -150,7 +171,7 @@
 
         ::-webkit-scrollbar {
           width: 10px;
-          height: 20px;
+          height: 10px;
         }
 
         ::-webkit-scrollbar-track {
@@ -167,7 +188,7 @@
     </style>
 </head>
 <body>
-    <div id="watcher" class="widget" style='display: none;left: calc(50vw - 50px);top: 20vh;'>
+    <div id="watcher" class="widget" style='display: none;left: calc(50vw - 82px);top: 20vh;'>
         <div class='widget-header'>
             <span style="vertical-align: top;">Registers</span>
             <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('watcher');$('#regwidbutton')[0].style['border-bottom'] = null"></span>
@@ -191,24 +212,27 @@
             <tr><td style="padding-right: 20px;">rs</td><td id="watcher-rf" style="min-width: 120px;">0000 NUL (0)</td></tr>
         </table>
     </div>
-    <div id="lblist" class="widget" style='display: none;left: calc(50vw - 50px);top: 20vh;'>
+    <div id="lblist" class="widget" style='display: none;left: calc(50vw - 60px);top: 25vh;'>
         <div class='widget-header'>
             <span style="vertical-align: top;">Labels</span>
             <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('lblist');$('#lblwidbutton')[0].style['border-bottom'] = null"></span>
             <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('lblist')"></span>
         </div>
-        <table id="lblisttable" class='widget-cont' style="font-family: consolas;">
-            <!-- <tr><td style="padding-right: 20px;">r1</td><td id="watcher-r1" style="min-width: 120px;"></td></tr> -->
-        </table>
+        <div id="lblisttablecontainer">
+            <table id="lblisttable" class='widget-cont' style="font-family: consolas;">
+                <!-- <tr><td style="padding-right: 20px;">r1</td><td id="watcher-r1" style="min-width: 120px;"></td></tr> -->
+            </table>
+        </div>
     </div>
-    <table id='editor'>
-        <tr id="toolbar"><td style="padding: 0px;">
+    <div id="editor">
+        <div id='toolbar'>
             <div class='button' id="buildbutton" onclick="build()">
                 <span class="iconify" data-icon="mdi:settings" data-inline="false" style="top: -2px;"></span>    
                 <span style="vertical-align: top;">Build</span>
             </div>
             <div class='button' id="runbutton" onclick="runcode()" disabled='1'>
-                <span class="iconify" data-icon="mdi:play" data-inline="false" style="top: -2px;"></span>
+                <span id="runbutton-play" class="iconify" data-icon="mdi:play" data-inline="false" style="top: -2px;"></span>
+                <span id="runbutton-stop" class="iconify" data-icon="mdi:stop" data-inline="false" style="top: -2px;display: none"></span>
                 <span style="vertical-align: top;">Run</span>
             </div>
             <div class='button' id="savebutton" onclick="savecode()">
@@ -243,25 +267,20 @@
                 <span class="iconify" data-icon="mdi:book-open-outline" data-inline="false" style="top: -2px;"></span>
                 <span style="vertical-align: top;">Docs</span>
             </div>
-            <!-- <div class='button' id="examplesbutton" onclick="" style="float: right;">
-                <span class="iconify" data-icon="mdi:arrow-down-drop" data-inline="false" style="top: -2px;"></span>
-                <span style="vertical-align: top;">Examples</span>
-            </div> -->
-        </td></tr>
-        <tr style="padding: 0px;">
-            <td id='editarea'></td>
-        </tr>
-        <tr style="padding: 0px;">
-            <td id="console">
-                <div id='consolebar'>
-                    <div onclick="term.innerHTML = ''">
-                        <span class="iconify consbutton" data-icon="mdi:cancel" data-inline="false" style="top: 1;"></span>
-                    </div>
+        </div>
+        <div id="editarea"></div>
+        <div id="console">
+            <div id="consolebar">
+                <div onclick="term.innerHTML = ''">
+                    <span class="iconify consbutton" data-icon="mdi:cancel" data-inline="false" style="top: 1;"></span>
                 </div>
+            </div>
+            <div id="consolecontainer">
                 <pre id="console_pre"></pre>
-            </td>
-        </tr>
-    </table>
+                <input type="text" id='console_input' disabled>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript">
         editor = CodeMirror($('#editarea')[0],{
             value: `    jmp start
@@ -281,6 +300,7 @@ loop:
             lineNumbers: true,
             gutters: ["CodeMirror-linenumbers", "breakpoints"],
             theme: "vscode-dark",
+            indentUnit: 4,
         });
 
         editor.on("gutterClick", function(cm, n) {
@@ -291,13 +311,32 @@ loop:
                     if(breakpoints[i]==info.line) breakpoints.splice(i,1)
                 }
             }else{
+                lineinfo = asmer.parseLine(info.text)
+                while(lineinfo[2]==undefined){
+                    ++n
+                    linfo = cm.lineInfo(n)
+                    if(linfo==null) return
+                    lineinfo = asmer.parseLine(linfo.text)
+                }
+                if(breakpoints.includes(n)) return
+
+                //console.log(info,lineinfo[2],n,nline)
+
                 cm.setGutterMarker(n, "breakpoints", makeMarker());
-                breakpoints.push(info.line)
+                breakpoints.push(n)  //(info.line)
             }
         });
 
         editor.on("change",function (cm) {
             $("#savebutton")[0].setAttribute("active",'true');
+        })
+
+        $("#console_input").on('keydown',(e)=>{
+            if(e.keyCode==13){
+                term_stdin = $("#console_input").val()
+                $("#console_input").val('')
+                svm.set_flag(8,0);
+            }
         })
 
         if(localStorage.getItem('cm_code')!=null){
@@ -315,7 +354,8 @@ loop:
         breakpoints = []
         mem_breakpoints = {}
         macros = {}
-        mach = ""
+        mach = {}
+        term_stdin = ''
 
         debugLastActiveLine = -1;
 
@@ -328,10 +368,13 @@ loop:
             if($("#runbutton")[0].getAttribute("disabled")=='1') return;
             if(!running){
                 svm.mem.fill(0)
-                svm.loadHex(mach)
+                svm.loadSections(mach)
                 running = true
                 $("#debugbutton")[0].setAttribute("disabled",'1');
-                $("#runbutton")[0].setAttribute("disabled",1);
+                $("#runbutton>span")[0].innerHTML = "Stop";
+                $("#runbutton-stop")[0].style["display"] = null;
+                $("#runbutton-play")[0].style["display"] = "none";
+                //$("#runbutton")[0].setAttribute("disabled",1);
                 $("#buildbutton")[0].setAttribute("disabled",'1');
                 svm.set_reg(14,256)
                 svm.set_reg(15,0)
@@ -339,17 +382,24 @@ loop:
                 for (var i = 1; i < 13; i++) {
                     svm.set_reg(i,0)
                 }
-                id = setTimeout(()=>{
-                    while(!svm.get_flag(3)){
+                id = setInterval(()=>{
+                    for (var i = 0; i < 512; i++) {
                         svm.step()
+                        if(svm.get_flag(3)){
+                            clearInterval(id)
+                            $("#runbutton>span")[0].innerHTML = "Run";
+                            $("#runbutton-stop")[0].style["display"] = "none";
+                            $("#runbutton-play")[0].style["display"] = null;
+                            $("#buildbutton")[0].setAttribute("disabled",'0');
+                            $("#debugbutton")[0].setAttribute("disabled",'0');
+                            running = false
+                            closeTermScan()
+                            break
+                        }
                     }
-                    $("#runbutton")[0].setAttribute("disabled",0);
-                    $("#buildbutton")[0].setAttribute("disabled",'0');
-                    $("#debugbutton")[0].setAttribute("disabled",'0');
-                    running = false
                 },0)
             }else if(running){
-                //svm.set_flag(3,0);
+                svm.set_flag(3,1);
             }
         }
 
@@ -377,6 +427,7 @@ loop:
             widgets_Z = 10
             closeWidget("watcher");
             closeWidget("lblist");
+            closeTermScan()
             $('#regwidbutton')[0].style['border-bottom'] = null
             $('#lblwidbutton')[0].style['border-bottom'] = null
             clearInterval(debugRunId);
@@ -407,7 +458,7 @@ loop:
             $("#runstepbutton-play")[0].style["display"] = "none";
             $("#runstepbutton-step")[0].style["display"] = null;
             svm.mem.fill(0)
-            svm.loadHex(mach)
+            svm.loadSections(mach)
             svm.set_reg(14,256)
             svm.set_reg(15,0)
             svm.set_flag(3,0)
@@ -435,7 +486,10 @@ loop:
                 }
                 debugLastActiveLine = mem_breakpoints[svm.get_reg(14)];
                 if(debugLastActiveLine==undefined) debugLastActiveLine = -1
-                if(debugLastActiveLine) editor.addLineClass(debugLastActiveLine,"background","debug-active-line")
+                if(debugLastActiveLine!=-1){
+                    editor.addLineClass(debugLastActiveLine,"background","debug-active-line")
+                    jumpToLine(debugLastActiveLine)
+                }
                 if(svm.get_flag(3)){
                     stopDebug();
                 }
@@ -491,6 +545,19 @@ loop:
         function Warn(e) {
             term.innerHTML += "<span style='color: lightblue'>"+("Warning: Line " + (asmer.line+1)+ ': ' + e)+"\n</span>"
             term.scrollTop = term.scrollHeight;
+        }
+
+        function termScan() {
+            $("#console_input").show()
+            $("#console_input").prop('disabled', false)
+            $("#console_input").focus()
+        }
+
+        function closeTermScan() {
+            $("#console_input").val('')
+            term_stdin = ''
+            $("#console_input").prop('disabled', true)    
+            $("#console_input").hide()
         }
 
         function build() {
@@ -583,6 +650,22 @@ loop:
             if(num==27) return 'ESC'
             return '---'
         }
+
+        document.addEventListener("keydown", function(e) {
+        if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault();
+            savecode()
+        }else if (e.keyCode == 66 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault();
+            build()
+        }
+        }, false);
+
+        function jumpToLine(i) { 
+            var t = editor.charCoords({line: i, ch: 0}, "local").top; 
+            var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
+            editor.scrollTo(null, t - middleHeight - 5); 
+        } 
     </script>
 </body>
 </html>

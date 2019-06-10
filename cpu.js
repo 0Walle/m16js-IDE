@@ -12,7 +12,6 @@ function VirtualMachine() {
     }
 
     this.db64 = (mask,inst) => {
-        //console.log(inst)
         return this.decodeb64(mask[Math.floor(inst/6)]) & (1<<(5-inst%6))
     }
 
@@ -26,62 +25,67 @@ function VirtualMachine() {
         let addr;
         let stat;
         let flg;
-        if(this.db64("f9/3+//7//gAAAfsAA==",inst)) src = temp = this.get_reg(r1);
-        if(this.db64("AAAAAAAAAAAAAAAAAg==",inst)) this.set_memB((op1<<8|op2), op3);
-        if(this.db64("f///+AAAAAAAAAAQDA==",inst)) addr = (op2<<8|op3)+this.get_reg(r2);
-        if(this.db64("fsAAAAAAAAAAAAAQAA==",inst)) temp = this.get_memW(addr);
-        if(this.db64("AD+wAAAAAAAAAAAADA==",inst)) temp = this.get_memB(addr);
-        if(this.db64("AAAP+AAAAAAAAAAAAA==",inst)) temp = this.get_memBX(addr);
-        if(this.db64("AAAAB//4AAAAAAAAAA==",inst)) temp = (op2<<8|op3);
-        if(this.db64("AAAAAAAH//gAAAAAAA==",inst)) temp = this.get_reg(r2);
-        if(this.db64("AAAAAAAAAAf/+AAA8A==",inst)) temp = (op1<<8|op2);
-        if(this.db64("AAAAAAAAAAAAAAACAA==",inst)) temp = this.popB();
-        if(this.db64("AAAAAAAAAAAABAABAA==",inst)) temp = this.popW();
-        if(this.db64("QJAkEggCCAAAAAAAAA==",inst)) temp = src + temp;
-        if(this.db64("IkiSKRAJEAgAAAAAAA==",inst)) temp = src - temp;
-        if(this.db64("QBAEAgACAAAAAAAAAA==",inst)) temp += this.get_flag(2);
-        if(this.db64("IAgCAQABAAAAAAAAAA==",inst)) temp -= !this.get_flag(2);
-        if(this.db64("AAAAAAQABAAAAAAAAA==",inst)) temp = src * temp;
-        if(this.db64("AAAAAAIAAgAAAAAAAA==",inst)) temp = src / temp;
-        if(this.db64("AAAAAAEAAQAAAAAAAA==",inst)) temp = src % temp;
-        if(this.db64("EAQBAIAAgAAAAAAAAA==",inst)) temp = src & temp;
-        if(this.db64("CAIAgEAAQAAAAAAAAA==",inst)) temp = src | temp;
-        if(this.db64("BAEAQCAAIAAAAAAAAA==",inst)) temp = src ^ temp;
-        if(this.db64("AAAAAAAAAAAAAAAgAA==",inst)) {temp = src&0x80? src|0xFF00 : src;}
-        if(this.db64("AAAAAAAAAAAAAABAAA==",inst)) temp = !temp;
-        if(this.db64("AAAAAACAAIAAAAAAAA==",inst)) temp = this.shr(src,temp);
-        if(this.db64("AAAAAAAQABAAAAAAAA==",inst)) temp = this.ror(src,temp);
-        if(this.db64("AAAAAABAAEAAAAAAAA==",inst)) temp = this.shl(src,temp);
-        if(this.db64("AAAAAAAgACAAAAAAAA==",inst)) temp = this.rol(src,temp);
-        if(this.db64("AAAAAAAAAAAAAAQACA==",inst)) ++temp;
-        if(this.db64("AAAAAAAAAAAAAAIABA==",inst)) --temp;
-        if(this.db64("AAAAB//4AAAAAAAAAA==",inst)) temp += this.get_reg(r2);
-        if(this.db64("AAAAAAAAAAAAAAAIEA==",inst)) this.pushB(temp);
-        if(this.db64("AAAAAAAAAAAAAAAEIA==",inst)) this.pushW(temp);
-        if(this.db64("ft+3+/8L/wgAAAZAAA==",inst)) {this.updateFlags(temp)}
-        if(this.db64("fN832+/77/gAAAZAAA==",inst)) temp &= 0xFFFF;
-        if(this.db64("fP8/3+//7/gAAAZzAA==",inst)) this.set_reg(r1, temp);
-        if(this.db64("AABAAAAAAAAAAAAADA==",inst)) this.set_memB(addr, temp);
-        if(this.db64("AQAAAAAAAAAAAAAAAA==",inst)) this.set_memW(addr, temp);
-        if(this.db64("AAAAAAAAAAAYGAAAAA==",inst)) stat = this.get_flag(2);
-        if(this.db64("AAAAAAAAAAYGAAAAAA==",inst)) stat = this.get_flag(1);
-        if(this.db64("AAAAAAAAAAGBgAAAAA==",inst)) stat = this.get_flag(0);
-        if(this.db64("AAAAAAAAAABgQAAAAA==",inst)) stat = this.get_flag(0) || this.get_flag(1);
-        if(this.db64("AAAAAAAAAAKqiAAAAA==",inst)) stat = !stat;
-        if(this.db64("AAAAAAAAAAf4AAAAAA==",inst)) this.condJump(stat,temp);
-        if(this.db64("AAAAAAAAAAAH2AAAAA==",inst)) this.condJumpRel(stat,temp);
-        if(this.db64("AAAAAAAAAAAAAACAQA==",inst)) this.pushW(this.regs[14]+3);
-        if(this.db64("AAAAAAAAAAAABAGAwA==",inst)) {this.regs[14] = temp; return;}
-        if(this.db64("AAAAAAAAAAAAAfgAAA==",inst)) flg = 0;
-        if(this.db64("AAAAAAAAAAAAADgAAA==",inst)) flg = !flg;
-        if(this.db64("AAAAAAAAAAAAASAAAA==",inst)) this.set_flag(2,flg);
-        if(this.db64("AAAAAAAAAAAAAJAAAA==",inst)) this.set_flag(1,flg);
-        if(this.db64("AAAAAAAAAAAAAEgAAA==",inst)) this.set_flag(0,flg);
-        if(this.db64("AAAAAAAAAAAAAgAAAA==",inst)) this.syscall();
-        if(this.db64("f/////////gAB////g==",inst)) this.regs[14]++;
-        if(this.db64("f/////////gAAAf//g==",inst)) this.regs[14]++;
-        if(this.db64("f//////4AAAAAAAQ/g==",inst)) this.regs[14]++;
-        if(this.db64("f//////4AAAAAAAQDg==",inst)) this.regs[14]++;
+        //  BASAOXCSASLASAOXCSASLASAOXCASLASAOXCAMDMSSRRSLASAOXCAMDMSSRRSJJJJJJJJBBBBBBBBRSCCCSSSIDJJNENPPPPJJPPIDSLCCCCC
+        //  RDUNROMTDBDDUNROMTDBDDUNROMDBDDUNROMDUIOHHOOBDDUNROMDUIOHHOOBENLGLGCCENLGLGCCTYLLLEEENEMSOXOSSOOMSSSNETDPPPPP
+        //  KDBDWRPRCCBDBDBRPRCCBDBDBRPCC DBD RPCLVDRLLRC DBD RPCLVDRLLRCQETEETSCQETEETSCSSCZNCZNCCPRTSPHHPPPRHHCCRWSSSSS
+        //   WWW WWWWW BBB BBBBBXBBBXBBBB                                                        BW     BWWB    BB  WBB  
+        if("0111111111011111111101111111101111111111111110111111111111111000000000000000000000000111111011000000000011111"[inst]=='1') src = temp = this.get_reg(r1);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000"[inst]=='1') this.set_memB((op1<<8|op2), op3);
+        if("0111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000110111100"[inst]=='1') addr = (op2<<8|op3)+this.get_reg(r2);
+        if("0111111011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000110000"[inst]=='1') temp = this.get_memW(addr);
+        if("0000000000111111101100000000000000000000000000000000000000000000000000000000000000000000000000000000110001000"[inst]=='1') temp = this.get_memB(addr);
+        if("0000000000000000000011111111100000000000000000000000000000000000000000000000000000000000000000000000000000100"[inst]=='1') temp = this.get_memBX(addr);
+        if("0000000000000000000000000000011111111111111110000000000000000000000000000000000000000000000000000000000000010"[inst]=='1') temp = (op2<<8|op3);
+        if("0000000000000000000000000000000000000000000001111111111111111000000000000000000000000000000000000000000000001"[inst]=='1') temp = this.get_reg(r2); 
+        if("0000000000000000000000000000000000000000000000000000000000000111111111111111100000000000000000001111000000000"[inst]=='1') temp = (op1<<8|op2);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000"[inst]=='1') temp = this.popB();
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000010000000000000"[inst]=='1') temp = this.popW();
+        if("0100000010010000001001000001001000001000000000100000100000000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src + temp;
+        if("0010001001001000100100100010100100010000000010010001000000001000000000000000000000000000000000000000000000000"[inst]=='1') temp = src - temp;
+        if("0000000010000000001000000001000000001000000000000000100000000000000000000000000000000000000000000000000000000"[inst]=='1') temp += this.get_flag(2);
+        if("0000000001000000000100000000100000000000000010000000000000001000000000000000000000000000000000000000000000000"[inst]=='1') temp -= !this.get_flag(2);
+        if("0000000000000000000000000000000000000100000000000000010000000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src * temp;
+        if("0000000000000000000000000000000000000010000000000000001000000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src / temp;
+        if("0000000000000000000000000000000000000001000000000000000100000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src % temp;
+        if("0001000000000100000000010000000010000000000000001000000000000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src & temp;
+        if("0000100000000010000000001000000001000000000000000100000000000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src | temp;
+        if("0000010000000001000000000100000000100000000000000010000000000000000000000000000000000000000000000000000000000"[inst]=='1') temp = src ^ temp;
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000"[inst]=='1') {temp = src&0x80? src|0xFF00 : src;}
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000"[inst]=='1') temp = !temp;
+        if("0000000000000000000000000000000000000000100000000000000010000000000000000000000000000000000000000000000000000"[inst]=='1') temp = this.shr(src,temp);
+        if("0000000000000000000000000000000000000000000100000000000000010000000000000000000000000000000000000000000000000"[inst]=='1') temp = this.ror(src,temp);
+        if("0000000000000000000000000000000000000000010000000000000001000000000000000000000000000000000000000000000000000"[inst]=='1') temp = this.shl(src,temp);
+        if("0000000000000000000000000000000000000000001000000000000000100000000000000000000000000000000000000000000000000"[inst]=='1') temp = this.rol(src,temp);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000100000000"[inst]=='1') ++temp;
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000010000000"[inst]=='1') --temp;
+        if("0000000000000000000000000000011111111111111110000000000000000000000000000000000000000000000000000000000000010"[inst]=='1') temp += this.get_reg(r2);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000001000000000"[inst]=='1') this.pushB(temp);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000010000000000"[inst]=='1') this.pushW(temp);
+        if("0111111011011111101101111111101111111111000010111111111100001000000000000000000000000110010000000000000000000"[inst]=='1') {this.updateFlags(temp)}
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111"[inst]=='1') this.updateSignFlags(src,temp);
+        if("0111110011011111001101111101101111101111111110111110111111111000000000000000000000000110010000000000000000000"[inst]=='1') temp &= 0xFFFF;
+        if("0111110011111111001111111101111111101111111111111110111111111000000000000000000000000110011000110000000100000"[inst]=='1') this.set_reg(r1, temp);
+        if("0000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000110000000"[inst]=='1') this.set_memB(addr, temp);
+        if("0000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"[inst]=='1') this.set_memW(addr, temp);
+        if("0000000000000000000000000000000000000000000000000000000000000000000110000001100000000000000000000000000000000"[inst]=='1') stat = this.get_flag(2); //C
+        if("0000000000000000000000000000000000000000000000000000000000000110000001100000000000000000000000000000000000000"[inst]=='1') stat = this.get_flag(1); //Z
+        if("0000000000000000000000000000000000000000000000000000000000000001100000011000000000000000000000000000000000000"[inst]=='1') stat = this.get_flag(0); //N
+        if("0000000000000000000000000000000000000000000000000000000000000000011000000110000000000000000000000000000000000"[inst]=='1') stat = this.get_flag(0) || this.get_flag(1);
+        if("0000000000000000000000000000000000000000000000000000000000000010101010101010100000000000000000000000000000000"[inst]=='1') stat = !stat;
+        if("0000000000000000000000000000000000000000000000000000000000000111111110000000000000000000000000000000000000000"[inst]=='1') this.condJump(stat,temp);
+        if("0000000000000000000000000000000000000000000000000000000000000000000001111111100000000000000000000000000000000"[inst]=='1') this.condJumpRel(stat,temp);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000100000000000"[inst]=='1') this.pushW(this.regs[14]+3);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000010000000001100000001100000000000"[inst]=='1') {this.regs[14] = temp; return;}
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000111111000000000000000000000000"[inst]=='1') flg = 0;
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000000111000000000000000000000000"[inst]=='1') flg = !flg;
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000100100000000000000000000000000"[inst]=='1') this.set_flag(2,flg);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000010010000000000000000000000000"[inst]=='1') this.set_flag(1,flg);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000000001001000000000000000000000000"[inst]=='1') this.set_flag(0,flg);
+        if("0000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000"[inst]=='1') this.syscall();
+        if("0111111111111111111111111111111111111111111111111111111111111000000000000000001111111110011111110011111111111"[inst]=='1') this.regs[14]++;
+        if("0111111111111111111111111111111111111111111111111111111111111000000000000000000000000110011011110011111111111"[inst]=='1') this.regs[14]++;
+        if("0111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000011111111110"[inst]=='1') this.regs[14]++;
+        if("0111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000111111110"[inst]=='1') this.regs[14]++;
         if(inst == 0x00) this.set_flag(3,1);
     }
 
@@ -128,6 +132,13 @@ function VirtualMachine() {
         this.set_flag(0, val < 0);
     }
 
+    this.updateSignFlags = (src,temp) =>{
+        val = (src>0x7FFF? 0x10000-src: src) - (temp>0x7FFF? 0x10000-temp: temp)
+        this.set_flag(2, val > 0xFFFF);
+        this.set_flag(1, val == 0);
+        this.set_flag(0, val < 0);
+    }
+
     this.condJumpRel = (stat, addr) => {
         if (stat) this.regs[14] += addr;
         else this.regs[14] += 3;
@@ -148,6 +159,24 @@ function VirtualMachine() {
         if(cmd==0x11) terminal(this.get_reg(10)&0xFFFF)
         if(cmd==0x13) terminal(String.fromCharCode(this.get_reg(10)))
         if(cmd==0x14){while(this.mem[this.regs[10]]!=0){terminal(String.fromCharCode(this.mem[this.regs[10]++]));}}
+        if(cmd==0x15){
+            if(this.get_flag(8)){
+                --this.regs[14]
+            }else{
+                if(term_stdin){
+                    for (var j = 0; j < term_stdin.length; j++) {
+                        this.mem[this.regs[10]+j] = term_stdin.charCodeAt(j)&0xFF
+                    }
+                    this.mem[this.regs[10]+j] = 0
+                    this.regs[10] += term_stdin.length
+                    closeTermScan()
+                }else{
+                    termScan()
+                    this.set_flag(8,1)
+                    --this.regs[14]
+                }
+            }
+        }
         if(cmd==0x21) this.set_reg(10,Math.floor(Math.random()*0xFFFF))
         if(cmd==0x50) terminal(this.mem.slice(this.regs[10],this.regs[9]).toString()+'\n')
     }
@@ -158,9 +187,19 @@ function VirtualMachine() {
         this.regs[0] = 0;
     }
 
-    this.loadHex = (hex) => {
+    this.loadHex = (hex,start=256) => {
         for (var i = 0; i < hex.length; i+=2) {
-            this.mem[Math.floor(i/2)+256] = parseInt(hex.substr(i,2),16)
+            this.mem[Math.floor(i/2)+start] = parseInt(hex.substr(i,2),16)
+        }
+    }
+
+    this.loadSections = (sects) => {
+        for (start in sects) {
+            hex = sects[start];
+            start = parseInt(start)
+            for (var j = 0; j < hex.length; j+=2) {
+                this.mem[Math.floor(j/2)+start] = parseInt(hex.substr(j,2),16)
+            }
         }
     }
 
