@@ -169,6 +169,34 @@
             background-color: #313131;
         }
 
+        #examplesdrop{
+            display: none;
+            position: absolute;
+            z-index: 10;
+            background-color: #212121;
+            border: 1px solid #808080;
+            min-width: 120px;
+            /* padding: 5px; */
+            left: 0px;
+        }
+
+        #examplesdrop span{
+            padding: 5px;
+            display: block;
+        }
+
+        #examplesdrop span:hover{
+            background-color: #313131;
+        }
+        
+        #examplebutton{
+            position: relative;
+        }
+
+        #examplebutton:hover #examplesdrop{
+            display: block;
+        }
+
         ::-webkit-scrollbar {
           width: 10px;
           height: 10px;
@@ -267,6 +295,14 @@
                 <span class="iconify" data-icon="mdi:book-open-outline" data-inline="false" style="top: -2px;"></span>
                 <span style="vertical-align: top;">Docs</span>
             </div>
+            <div class='button' id="examplebutton" onclick="" style="float: right;">
+                <span class="iconify" data-icon="mdi:arrow-drop-down" data-inline="false" style="top: -2px;"></span>
+                <span style="vertical-align: top;">Examples</span>
+                <div id="examplesdrop">
+                    <span onclick="loadExample('hello_world.asm')">Hello world</span>
+                    <span onclick="loadExample('adventure.asm')">Adventure game</span>
+                </div>
+            </div>
         </div>
         <div id="editarea"></div>
         <div id="console">
@@ -308,10 +344,11 @@ loop:
             if(info.gutterMarkers){
                 cm.setGutterMarker(n, "breakpoints", null);
                 for (var i = breakpoints.length - 1; i >= 0; i--) {
-                    if(breakpoints[i]==info.line) breakpoints.splice(i,1)
+                    if(breakpoints[i].lineNo()==info.line){breakpoints.splice(i,1); break;}
                 }
             }else{
                 lineinfo = asmer.parseLine(info.text)
+                
                 while(lineinfo[2]==undefined){
                     ++n
                     linfo = cm.lineInfo(n)
@@ -320,10 +357,9 @@ loop:
                 }
                 if(breakpoints.includes(n)) return
 
-                //console.log(info,lineinfo[2],n,nline)
-
+                handle = editor.getLineHandle(n)
                 cm.setGutterMarker(n, "breakpoints", makeMarker());
-                breakpoints.push(n)  //(info.line)
+                breakpoints.push(handle) //(info.line)
             }
         });
 
@@ -347,11 +383,12 @@ loop:
         function makeMarker() {
           var marker = document.createElement("div");
           marker.style.color = "#f22";
-          marker.innerHTML = "●";
+          marker.innerHTML = "\u25cf";
           return marker;
         }
 
         breakpoints = []
+        number_breakpoints = []
         mem_breakpoints = {}
         macros = {}
         mach = {}
@@ -469,9 +506,14 @@ loop:
             debugLastActiveLine = mem_breakpoints[svm.get_reg(14)];
             editor.addLineClass(debugLastActiveLine,"background","debug-active-line")
 
+            number_breakpoints = []
             for (var i = breakpoints.length - 1; i >= 0; i--) {
-                var line = breakpoints[i];
-                if(editor.lineInfo(line)==null) breakpoints.splice(i,1)
+                var handle = breakpoints[i];
+                var line;
+                if((line = editor.lineInfo(handle))==null) breakpoints.splice(i,1)
+                else{
+                    number_breakpoints.push(line.line)
+                }
             }
         }
 
@@ -511,7 +553,7 @@ loop:
 
                     debugRunId = setInterval(()=>{
                         stepCode()
-                        if(breakpoints.includes(debugLastActiveLine)){
+                        if(number_breakpoints.includes(debugLastActiveLine)){
                             pauseDebug()
                         }
                     },0)
@@ -531,20 +573,21 @@ loop:
         svm.set_reg(14,0x100)
 
         term = document.getElementById("console_pre")
+        term_cont = document.getElementById("consolecontainer")
         function terminal(s) {
             term.innerHTML += s
-            term.scrollTop = term.scrollHeight;
+            term_cont.scrollTop = term_cont.scrollHeight;
         }
 
         function Error(e){
             term.innerHTML += "<span style='color: red'>"+("Error: Line " + (asmer.line+1)+ ': ' + e)+"\n</span>"
-            term.scrollTop = term.scrollHeight;
+            term_cont.scrollTop = term_cont.scrollHeight;
             throw "Line " + (asmer.line+1)+ ': ' + e;
         }
 
         function Warn(e) {
             term.innerHTML += "<span style='color: lightblue'>"+("Warning: Line " + (asmer.line+1)+ ': ' + e)+"\n</span>"
-            term.scrollTop = term.scrollHeight;
+            term_cont.scrollTop = term_cont.scrollHeight;
         }
 
         function termScan() {
@@ -666,6 +709,12 @@ loop:
             var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
             editor.scrollTo(null, t - middleHeight - 5); 
         } 
+
+        function loadExample(name) {
+            $.get("examples/"+name)
+             .done(function(data){ editor.setValue(data) })
+             .fail(function() { terminal("Error loading file.") });
+        }
     </script>
 </body>
 </html>
