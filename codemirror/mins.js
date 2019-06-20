@@ -14,6 +14,6 @@ CodeMirror.defineSimpleMode("mins", {
     {regex: /(%[01]+)\b/, token: "number"},
     {regex: /;.*/, token: "comment"},
     {regex: /:/, indent: true},
-    {regex: /[a-z$][\w$]*/, token: null},
+    {regex: /[a-zA-Z$][\w$]*/, token: null},
   ],
 });

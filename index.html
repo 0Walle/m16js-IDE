@@ -16,7 +16,7 @@
         body{
             margin: 0px;
             height: 100vh;
-            /* overflow: hidden; */
+            overflow: hidden;
             background:#1a1a1a;
         }
 
@@ -197,6 +197,21 @@
             display: block;
         }
 
+        #memdumpsize{
+            background-color: #252525;
+            color: white;
+            border: none;
+        }
+        #memdumpstart{
+            width: 60px;
+            background-color: #252525;
+            color: white;
+            border:none;
+        }
+        #memdumpoptions{
+            padding: 2px 0px;
+        }
+
         ::-webkit-scrollbar {
           width: 10px;
           height: 10px;
@@ -216,34 +231,59 @@
     </style>
 </head>
 <body>
+    <div id="memdump" class="widget" style='display: none;left: calc(50vw - 60px);top: 25vh;'>
+        <div class='widget-header'>
+            <span style="vertical-align: top;">Memory Viewer</span>
+            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('memdump');memdumpOpen=false;"></span>
+            <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('memdump')"></span>
+        </div>
+        <div id="memdumpcontainer">
+            <div id='memdumpoptions'>
+                <label>Start address </label><input type="number" name="memstart" id="memdumpstart">
+                <span>View size</span>
+                <select name="memsize" id="memdumpsize">
+                    <option value="8">8</option>
+                    <option value="16">16</option>
+                    <option value="32">32</option>
+                    <option value="64">64</option>
+                    <option value="128">128</option>
+                    <option value="256">256</option>
+                </select>
+            </div>
+            <pre id="memdumppre" class='widget-cont' style="font-family: consolas; margin: 0px;"></pre>
+        </div>
+    </div>
     <div id="watcher" class="widget" style='display: none;left: calc(50vw - 82px);top: 20vh;'>
         <div class='widget-header'>
             <span style="vertical-align: top;">Registers</span>
-            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('watcher');$('#regwidbutton')[0].style['border-bottom'] = null"></span>
+            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('watcher');"></span>
             <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('watcher')"></span>
         </div>
         <table class='widget-cont' style="font-family: consolas;">
-            <tr><td style="padding-right: 20px;">r1</td><td id="watcher-r1" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r2</td><td id="watcher-r2" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r3</td><td id="watcher-r3" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r4</td><td id="watcher-r4" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r5</td><td id="watcher-r5" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r6</td><td id="watcher-r6" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r7</td><td id="watcher-r7" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">r8</td><td id="watcher-r8" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">a0</td><td id="watcher-rb" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">a1</td><td id="watcher-ra" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">a2</td><td id="watcher-r9" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">fp</td><td id="watcher-rc" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">sp</td><td id="watcher-rd" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">ip</td><td id="watcher-re" style="min-width: 120px;">0000 NUL (0)</td></tr>
-            <tr><td style="padding-right: 20px;">rs</td><td id="watcher-rf" style="min-width: 120px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r1</td><td id="watcher-r1" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r2</td><td id="watcher-r2" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r3</td><td id="watcher-r3" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r4</td><td id="watcher-r4" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r5</td><td id="watcher-r5" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r6</td><td id="watcher-r6" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r7</td><td id="watcher-r7" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">r8</td><td id="watcher-r8" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">a0</td><td id="watcher-rb" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">a1</td><td id="watcher-ra" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">a2</td><td id="watcher-r9" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">fp</td><td id="watcher-rc" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">sp</td><td id="watcher-rd" style="min-width: 130px;">0000 NUL (0)</td></tr>
+            <tr><td style="padding-right: 20px;">ip</td><td id="watcher-re" style="min-width: 130px;">0000 NUL (0)</td></tr>
+        </table>
+        <table style="font-family: consolas;">
+            <tr><td>------------HCZN</tr>
+            <tr><td id="watcher-rf">0000000000000000</td></tr>
         </table>
     </div>
     <div id="lblist" class="widget" style='display: none;left: calc(50vw - 60px);top: 25vh;'>
         <div class='widget-header'>
             <span style="vertical-align: top;">Labels</span>
-            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('lblist');$('#lblwidbutton')[0].style['border-bottom'] = null"></span>
+            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('lblist');"></span>
             <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('lblist')"></span>
         </div>
         <div id="lblisttablecontainer">
@@ -284,11 +324,14 @@
                 <div class='button' id="stepbutton" onclick="stepCode()" disabled='1'>
                     <span class="iconify" data-icon="mdi:debug-step-into" data-inline="false" style="top: -2px;"></span>
                 </div>
-                <div class='button' id="regwidbutton" onclick="showWidget('watcher');$('#regwidbutton')[0].style['border-bottom'] = '2px solid white'">
+                <div class='button' id="watcherbutton" onclick="showWidget('watcher');">
                     <span class="iconify" data-icon="mdi:chip" data-inline="false" style="top: -2px;"></span>
                 </div>
-                <div class='button' id="lblwidbutton" onclick="showWidget('lblist');$('#lblwidbutton')[0].style['border-bottom'] = '2px solid white'">
+                <div class='button' id="lblistbutton" onclick="showWidget('lblist');">
                     <span class="iconify" data-icon="mdi-format-list-bulleted-square" data-inline="false" style="top: -2px;"></span>
+                </div>
+                <div class='button' id="memdumpbutton" onclick="showWidget('memdump');memdumpOpen=true;">
+                    <span class="iconify" data-icon="mdi-cube-outline" data-inline="false" style="top: -2px;"></span>
                 </div>
             </div>
             <div class='button' id="docsbutton" onclick="window.open('docs/index.html', '_blank')" style="float: right;">
@@ -401,6 +444,13 @@ loop:
         debugInit = false
         debugPanel = false
 
+        memdumpOpen = false
+        memdumpSize = 128
+        memdumpStart = 128
+        memdump = document.getElementById('memdumppre')
+        memdumpsizeE = document.getElementById('memdumpsize')
+        memdumpstartE = document.getElementById('memdumpstart')
+
         function runcode() {
             if($("#runbutton")[0].getAttribute("disabled")=='1') return;
             if(!running){
@@ -464,9 +514,12 @@ loop:
             widgets_Z = 10
             closeWidget("watcher");
             closeWidget("lblist");
+            closeWidget("memdump");
             closeTermScan()
-            $('#regwidbutton')[0].style['border-bottom'] = null
-            $('#lblwidbutton')[0].style['border-bottom'] = null
+            //$('#regwidbutton')[0].style['border-bottom'] = null
+            //$('#lblwidbutton')[0].style['border-bottom'] = null
+            //$('#memdumpbutton')[0].style['border-bottom'] = null
+            memdumpOpen=false;
             clearInterval(debugRunId);
             debugRunId=0;
             debugging = false;
@@ -521,10 +574,23 @@ loop:
             if(debugInit){
                 if(debugLastActiveLine!=undefined) editor.removeLineClass(debugLastActiveLine,"background","debug-active-line")
                 svm.step()
-                for (var i = 1; i < 16; i++) {
+                for (var i = 1; i < 15; i++) {
                     num = svm.get_reg(i)
                     charcode = num >= 0x20 && num <= 0x7e ? "'"+String.fromCharCode(num)+"'" : asciiCode(num)
                     $("#watcher-r"+ i.toString(16))[0].innerHTML = `${num.toString(16).padStart(4,'0')} ${charcode} (${num})`
+                }
+                $("#watcher-rf")[0].innerHTML = `${svm.get_reg(15).toString(2).padStart(16,'0')}`
+                if(memdumpOpen){
+                    memdumpStart = parseInt(memdumpstartE.value || 0)
+                    memdumpSize = parseInt(memdumpsizeE.value)
+                    memdump.innerHTML = ''
+                    for (var i = memdumpStart, c = 0; i < memdumpStart+memdumpSize; i++, c++) {
+                        if(c%8==0) memdump.innerHTML += `${i.toString(16).padStart(4,'0')}   `
+                        num = svm.get_memB(i)
+                        //charcode = num >= 0x20 && num <= 0x7e ? "'"+String.fromCharCode(num)+"'" : asciiCode(num)
+                        memdump.innerHTML += `${num.toString(16).padStart(2,'0').toUpperCase()} `
+                        if(c%8==7) memdump.innerHTML += `<br>`
+                    }
                 }
                 debugLastActiveLine = mem_breakpoints[svm.get_reg(14)];
                 if(debugLastActiveLine==undefined) debugLastActiveLine = -1
@@ -636,35 +702,38 @@ loop:
         widgets_Z = 10
         dragElement(document.getElementById("watcher"));
         dragElement(document.getElementById("lblist"));
+        dragElement(document.getElementById("memdump"));
         function dragElement(elmnt) {
-          var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-          elmnt.children[0].onmousedown = dragMouseDown;
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            elmnt.style.top = localStorage.getItem(elmnt.id+'_top');
+            elmnt.style.left = localStorage.getItem(elmnt.id+'_left');
+            elmnt.children[0].onmousedown = dragMouseDown;
 
-          function dragMouseDown(e) {
-            e = e || window.event;
-            e.preventDefault();
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onmouseup = closeDragElement;
-            document.onmousemove = elementDrag;
-            elmnt.style["z-index"] = ++widgets_Z;
-          }
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                elmnt.style["z-index"] = ++widgets_Z;
+            }
 
-          function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-          }
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
 
-          function closeDragElement() {
-            document.onmouseup = null;
-            document.onmousemove = null;
-          }
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
         }
 
         function toggleCol(id) {
@@ -678,11 +747,16 @@ loop:
         }
 
         function closeWidget(id) {
-            wid = document.getElementById(id).style['display'] = 'none';
+            (wid = document.getElementById(id)).style['display'] = 'none';
+            document.getElementById(id+'button').style['border-bottom'] = null;
+            //console.log(wid.style.left,wid.style.top)
+            localStorage.setItem(id+'_left', wid.style.left);
+            localStorage.setItem(id+'_top', wid.style.top);
         }
 
         function showWidget(id) {
-            document.getElementById(id).style['display'] = null;
+            (wid = document.getElementById(id)).style['display'] = null;
+            document.getElementById(id+'button').style['border-bottom'] = '2px solid white'
         }
 
         function asciiCode(num) {
@@ -701,6 +775,9 @@ loop:
         }else if (e.keyCode == 66 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
             e.preventDefault();
             build()
+        }else if (e.keyCode == 68 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault();
+            runcode()
         }
         }, false);
 

@@ -42,6 +42,13 @@ function parseOps(ops){
                 if(ops[0]==']'){ops = ops.substr(1)}
                 result.push(new Operand(4,d[0].name.id,d[0].num,reg));
                 result = result.concat(parseOps(ops))
+            }else if(ops[0]=='-'){
+                d = parseLiteral(ops = ops.substr(1).trim())
+                d[0].num = -d[0].num
+                ops = ops.substr(d[1]).trim()
+                if(ops[0]==']'){ops = ops.substr(1)}
+                result.push(new Operand(4,d[0].name.id,d[0].num,reg));
+                result = result.concat(parseOps(ops))
             }else if(ops[0]==']'){
                 result.push(new Operand(4,'',0,reg));
                 result = result.concat(parseOps(ops.substr(1)))
