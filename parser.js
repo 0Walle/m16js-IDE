@@ -129,6 +129,11 @@ function parseOps(ops){
 function parseLiteral(ops){
     if(match = /^\$([a-fA-F0-9]+)\b/.exec(ops)){
         return [new Operand(1,'',parseInt(match[1],16),0),match[0].length]
+    }else if(match = /^\$hc\(([0-9]+),([0-9]+),([0-9]+)\)/.exec(ops)){
+        let r = Math.floor(parseInt(match[1])/8)<<11;
+        let g = Math.floor(parseInt(match[2])/4)<<5;
+        let b = Math.floor(parseInt(match[3])/8);
+        return [new Operand(1,'',r|g|b,0),match[0].length]
     }else if(match = /^\%([01]+)\b/.exec(ops)){
         return [new Operand(1,'',parseInt(match[1],2),0),match[0].length]
     }else if(match = /^\'(\\?.)\'/.exec(ops)){

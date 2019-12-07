@@ -178,7 +178,34 @@ function VirtualMachine() {
             }
         }
         if(cmd==0x21) this.set_reg(10,Math.floor(Math.random()*0xFFFF))
+        if(cmd==0x32){
+            let size = this.regs[10];
+            for (var i = 0; i < heap.length; i++) {
+                let block = heap[i]
+                if(block[0]==0 && block[1]>=size){
+                    let temp = heap.slice(0,i)
+                    temp.push([0,block[1]-size,block[2]+size,0])
+                    heap = temp.concat(heap.slice(i))
+                    block[1] = size;
+                    block[0] = 1;
+                    this.set_reg(10,block[2])
+                    return
+                }
+            }
+            this.set_reg(10,0)
+        }
         if(cmd==0x50) terminal(this.mem.slice(this.regs[10],this.regs[9]).toString()+'\n')
+        if(cmd==0x70){
+            let resolution = 64;
+            let pxsize = 128/resolution;
+            let color = this.regs[9];
+            let pixel = this.regs[10];
+            let r = ((color&0b1111100000000000)>>11)*8
+            let g = ((color&0b0000011111100000)>>5)*4
+            let b = (color&0b0000000000011111)*8
+            monitor.fillStyle = "rgba("+r+","+g+","+b+",1)";
+            monitor.fillRect((pixel%resolution)*pxsize,(Math.floor(pixel/resolution)%resolution)*pxsize,pxsize,pxsize);
+        }
     }
 
     this.step = () => {

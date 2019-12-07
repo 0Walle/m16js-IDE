@@ -19,7 +19,7 @@ function Assembler() {
         popb: 7, popw: 7,
         incb: 8, decb: 8,
         str: 9,
-        ".data": 100,".label": 100,".zeros": 100,".datasection": 100,".textsection": 100,
+        ".data": 100,".label": 100,".zeros": 100,".datasection": 100,".textsection": 100, ".dataw"
     }
 
     this.byteOp = (op1,op2) => {
@@ -36,7 +36,16 @@ function Assembler() {
     this.assemble = (code) =>{
         code = code.split('\n')
 
-        this.labels = {}
+        this.labels = {
+            "sys_printR":0x11,
+            "sys_printC":0x13,
+            "sys_printS":0x14,
+            "sys_scanS":0x15,
+            "sys_random":0x21,
+            "sys_alloc":0x32,
+            "sys_print_memory":0x50,
+            "sys_setpx":0x70,
+        }
 
         sects = {}
         mem = []
@@ -124,6 +133,16 @@ function Assembler() {
                           //console.log(ops[j])
                           if(!ops[j].name.id){
                             mem.push(ops[j].num&0xFF)
+                          }else{
+                            mem.push(ops[j])
+                            asmpc += 1
+                          }
+                        }
+                        asmpc += ops.length
+                    }else if(inst[2]=='.dataw'){
+                        for (var j = 0; j < ops.length; j++) {
+                          if(!ops[j].name.id){
+                            mem.push(ops[j].num&0xFFFF)
                           }else{
                             mem.push(ops[j])
                             asmpc += 1

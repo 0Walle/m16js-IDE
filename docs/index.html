@@ -54,7 +54,8 @@
     <pre>213             ; decimal number
 $3f             ; hexadecimal number
 %01001010       ; binary number
-'a'             ; character</pre>
+'a'             ; character
+$hc(0,255,128)  ; rgb color to high color (16 bit)</pre>
     <p>Literals can be added or subtracted with expresions, e.g.:</p>
     <pre>label+1     ; value of label plus 1
 label-3     ; value of label minus 3
@@ -556,9 +557,21 @@ Zero extended: 0000 0000 1001 0110 (150)
             <td>a1: 16bit random number</td>
         </tr>
         <tr>
+            <td>Dynamic Alloc</td>
+            <td>50</td>
+            <td>a1: number of bytes to allocate</td>
+            <td>a1: start address of the allocated memory</td>
+        </tr>
+        <tr>
             <td>Print Memory</td>
             <td>80</td>
             <td>a1: start memory address<br>a2: end memory address</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>Set Pixel</td>
+            <td>112</td>
+            <td>a1: pixel location<br>a2: pixel color (high color)</td>
             <td>-</td>
         </tr>
     </table>

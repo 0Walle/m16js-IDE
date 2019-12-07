@@ -292,6 +292,16 @@
             </table>
         </div>
     </div>
+    <div id="monitor" class="widget" style='display: none;left: calc(50vw - 60px);top: 25vh;'>
+        <div class='widget-header'>
+            <span style="vertical-align: top;">Monitor</span>
+            <span class="iconify widget-button" data-icon="mdi:window-close" data-inline="false" style="float: right;" onclick="closeWidget('monitor');"></span>
+            <span class="iconify widget-button" data-icon="mdi:window-minimize" data-inline="false" style="float: right;" onclick="toggleCol('monitor')"></span>
+        </div>
+        <div class='widget-cont' id="monitorcontainer" style="height: 128px; background: black;">
+            <canvas id="monitorcanvas" height="128" width="128"></canvas>
+        </div>
+    </div>
     <div id="editor">
         <div id='toolbar'>
             <div class='button' id="buildbutton" onclick="build()">
@@ -334,6 +344,10 @@
                     <span class="iconify" data-icon="mdi-cube-outline" data-inline="false" style="top: -2px;"></span>
                 </div>
             </div>
+            <div class='button' id="monitorbutton" onclick="showWidget('monitor');memdumpOpen=true;">
+                <span class="iconify" data-icon="mdi:pencil-box-outline" data-inline="false" style="top: -2px;"></span>
+                <span style="vertical-align: top;">Monitor</span>
+            </div>
             <div class='button' id="docsbutton" onclick="window.open('docs/index.html', '_blank')" style="float: right;">
                 <span class="iconify" data-icon="mdi:book-open-outline" data-inline="false" style="top: -2px;"></span>
                 <span style="vertical-align: top;">Docs</span>
@@ -362,6 +376,10 @@
         </div>
     </div>
     <script type="text/javascript">
+        let monitor_canvas = $("#monitorcanvas")[0];
+        let monitor = monitor_canvas.getContext("2d");
+        let heap = [[0,0x8000,0x8000,0]];
+
         editor = CodeMirror($('#editarea')[0],{
             /*value: `    jmp start
 
@@ -481,6 +499,7 @@ end:
             if($("#runbutton")[0].getAttribute("disabled")=='1') return;
             if(!running){
                 svm.mem.fill(0)
+                heap = [[0,0x4000,0x4000,0]];
                 svm.loadSections(mach)
                 running = true
                 $("#debugbutton")[0].setAttribute("disabled",'1');
@@ -574,6 +593,7 @@ end:
             $("#runstepbutton-play")[0].style["display"] = "none";
             $("#runstepbutton-step")[0].style["display"] = null;
             svm.mem.fill(0)
+            heap = [[0,0x4000,0x4000,0]];
             svm.loadSections(mach)
             svm.set_reg(14,256)
             svm.set_reg(15,0)
@@ -729,6 +749,7 @@ end:
         dragElement(document.getElementById("watcher"));
         dragElement(document.getElementById("lblist"));
         dragElement(document.getElementById("memdump"));
+        dragElement(document.getElementById("monitor"));
         function dragElement(elmnt) {
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             elmnt.style.top = localStorage.getItem(elmnt.id+'_top');
@@ -816,7 +837,7 @@ end:
         function loadExample(name) {
             $.get("examples/"+name)
              .done(function(data){ editor.setValue(data) })
-             .fail(function() { terminal("Error loading file.") });
+             .fail(function() { terminal("Error loading file.\n") });
         }
     </script>
 </body>
