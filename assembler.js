@@ -19,7 +19,7 @@ function Assembler() {
         popb: 7, popw: 7,
         incb: 8, decb: 8,
         str: 9,
-        ".data": 100,".label": 100,".zeros": 100,".datasection": 100,".textsection": 100, ".dataw"
+        ".data": 100,".label": 100,".zeros": 100,".datasection": 100,".textsection": 100, ".dataw":100
     }
 
     this.byteOp = (op1,op2) => {
