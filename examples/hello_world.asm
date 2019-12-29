@@ -1,6 +1,6 @@
     jmp start
 
-string: .data "hello world\\n"
+string: .data "hello world\n"
 
 start:
     ld a0, $13

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="description" content="An emulator and assembly editor for the fantasy computer m160">
+    <meta name="keywords" content="Assembly,Fantasy Computer">
     <title>Assembly</title>
     <script src="https://code.iconify.design/1/1.0.2/iconify.min.js"></script>
     <script src="jquery-3.3.1.min.js"></script>
@@ -381,7 +383,7 @@
         let heap = [[0,0x8000,0x8000,0]];
 
         editor = CodeMirror($('#editarea')[0],{
-            /*value: `    jmp start
+            value: `    jmp start
 
 string: .data "hello world\\n"
 
@@ -393,32 +395,7 @@ loop:
     sys
     inc r1
     cmp a1, 0
-    jne loop`,*/
-            value: `    jmp start
-start:
-    ld r2, 12   ; capacidade
-    ld r1, 55   ; alunos
-    ld r4, 0    ; viagens
-loop:
-    ld r3, r1           ; t = alunos
-    inc r3              ; t++
-    sub r3, r2          ; t -= capacidade
-    ld r1, r3           ; alunos = t
-    inc r4              ; viagens++
-    cmp r1, %10000000   ; { if alunos > 0 jump to loop
-    jlt test2
-    jmp end
-test2:
-    cmp r1, 0
-    jeq end
-    jmp loop            ; }
-end:
-    ld a0, 17           ; { print(Alunos + '\\n')
-    ld a1, r4
-    sys
-    ld a0, 19
-    ld a1, '\\n'
-    sys                 ; }`,
+    jne loop`,
             mode:  "mins",
             lineNumbers: true,
             gutters: ["CodeMirror-linenumbers", "breakpoints"],

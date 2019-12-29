@@ -141,14 +141,9 @@ function Assembler() {
                         asmpc += ops.length
                     }else if(inst[2]=='.dataw'){
                         for (var j = 0; j < ops.length; j++) {
-                          if(!ops[j].name.id){
-                            mem.push(ops[j].num&0xFFFF)
-                          }else{
-                            mem.push(ops[j])
-                            asmpc += 1
-                          }
+                          mem.push(ops[j])
                         }
-                        asmpc += ops.length
+                        asmpc += ops.length*2
                     }else if(inst[2]=='.datasection'){
                       sects[locpos] = mem
                       mem = []
