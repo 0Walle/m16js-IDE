@@ -12,17 +12,8 @@ function VirtualMachine() {
     }
 
     this.db64 = (mask,inst) => {
+        inst+=2
         return this.decodeb64(mask[Math.floor(inst/6)]) & (1<<(5-inst%6))
-    }
-
-    this.test = ()=>{
-        let inst = 0;
-        while(inst < 110){
-            if(this.db64("VFVVVVVVVVVVVVVVVRUAAA==",inst)){
-                console.log(inst);
-            }
-            inst++;
-        }
     }
 
     this.execute = (inst,op1,op2,op3) => {
@@ -39,65 +30,64 @@ function VirtualMachine() {
         //       RDUNROMTDBDDUNROMTDBDDUNROMDBDDUNROMDUIOHHOOBDDUNROMDUIOHHOOBENLGLGCCENLGLGCCTYLLLEEENEMSOXOSSOOMSSSNETDPPPPP
         //       KDBDWRPRCCBDBDBRPRCCBDBDBRPCC DBD RPCLVDRLLRC DBD RPCLVDRLLRCQETEETSCQETEETSCSSCZNCZNCCPRTSPHHPPPRHHCCRWSSSSS
         //        WWW WWWWW BBB BBBBBXBBBXBBBB                                                        BW     BWWB    BB  WBB  
-        if(this.db64("H4D9AAAA/3//f//++w8AAA==",inst)) src = temp = this.get_reg(r1);
-        if(this.db64("QAAAAAAAAAAAAAAAAAAAAA==",inst)) this.set_memB((op1<<8|op2), op3);
-        if(this.db64("vAEAAAAAAAAAAP///w8AAA==",inst)) addr = (op2<<8|op3)+this.get_reg(r2);
-        if(this.db64("MAAAAAAAAAAAAAAA2A8AAA==",inst)) temp = this.get_memW(addr&0xffff);
-        if(this.db64("iAEAAAAAAAAAAAD2BwAAAA==",inst)) temp = this.get_memB(addr&0xffff);
-        if(this.db64("BAAAAAAAAAAAAP8BAAAAAA==",inst)) temp = this.get_memBX(addr&0xffff);
-        if(this.db64("AgAAAAAAAAD//wAAAAAAAA==",inst)) temp = (op2<<8|op3);
-        if(this.db64("AQAAAAAA//8AAAAAAAAAAA==",inst)) temp = this.get_reg(r2); 
-        if(this.db64("AB4AAP//AAAAAAAAAAAAAA==",inst)) temp = (op1<<8|op2);
-        if(this.db64("AEAAAAAAAAAAAAAAAAAAAA==",inst)) temp = this.popB();
-        if(this.db64("ACAAgAAAAAAAAAAAAAAAAA==",inst)) temp = this.popW();
-        if(this.db64("AAAAAAAAAEEAQYIEEggAAA==",inst)) temp = src + temp;
-        if(this.db64("AAAAAAAAASIBIkUSSQQAAA==",inst)) temp = src - temp;
-        if(this.db64("AAAAAAAAAAEAAQIEEAAAAA==",inst)) temp += this.get_flag(2);
-        if(this.db64("AAAAAAAAAQABAAECCAAAAA==",inst)) temp -= !this.get_flag(2);
-        if(this.db64("AAAAAAAAgACAAAAAAAAAAA==",inst)) temp = src * temp;
-        if(this.db64("AAAAAAAAQABAAAAAAAAAAA==",inst)) temp = src / temp;
-        if(this.db64("AAAAAAAAIAAgAAAAAAAAAA==",inst)) temp = src % temp;
-        if(this.db64("AAAAAAAAABAAECCAAAIAAA==",inst)) temp = src & temp;
-        if(this.db64("AAAAAAAAAAgACBBAAAEAAA==",inst)) temp = src | temp;
-        if(this.db64("AAAAAAAAAAQABAgggAAAAA==",inst)) temp = src ^ temp;
-        if(this.db64("AAAEAAAAAAAAAAAAAAAAAA==",inst)) {temp = src&0x80? src|0xFF00 : src;}
-        if(this.db64("AAAIAAAAAAAAAAAAAAAAAA==",inst)) temp = !temp;
-        if(this.db64("AAAAAAAAEAAQAAAAAAAAAA==",inst)) temp = this.shr(src,temp);
-        if(this.db64("AAAAAAAAAgACAAAAAAAAAA==",inst)) temp = this.ror(src,temp);
-        if(this.db64("AAAAAAAACAAIAAAAAAAAAA==",inst)) temp = this.shl(src,temp);
-        if(this.db64("AAAAAAAABAAEAAAAAAAAAA==",inst)) temp = this.rol(src,temp);
-        if(this.db64("AAGAAAAAAAAAAAAAAAAAAA==",inst)) ++temp;
-        if(this.db64("gABAAAAAAAAAAAAAAAAAAA==",inst)) --temp;
-        if(this.db64("AgAAAAAAAAD//wAAAAAAAA==",inst)) temp += this.get_reg(r2);
-        if(this.db64("AAIBAAAAAAAAAAAAAAAAAA==",inst)) this.pushB(temp);
-        if(this.db64("AIQAAAAAAAAAAAAAAAAAAA==",inst)) this.pushW(temp);
-        if(this.db64("AADIAAAA4X/hf//22w8AAA==",inst)) {this.updateFlags(temp)}
-        if(this.db64("HwAAAAAAAAAAAAAAAAAAAA==",inst)) this.updateSignFlags(src,temp);
-        if(this.db64("AADIAAAA/33/ffvmmw8AAA==",inst)) temp &= 0xFFFF;
-        if(this.db64("IGDMAAAA//3//fvnnw8AAA==",inst)) this.set_reg(r1, temp);
-        if(this.db64("gAEAAAAAAAAAAAAIAAAAAA==",inst)) this.set_memB(addr&0xffff, temp);
-        if(this.db64("AAAAAAAAAAAAAAAAIAAAAA==",inst)) this.set_memW(addr&0xffff, temp);
-        if(this.db64("AAAAAAMDAAAAAAAAAAAAAA==",inst)) stat = this.get_flag(2); //C
-        if(this.db64("AAAAAMDAAAAAAAAAAAAAAA==",inst)) stat = this.get_flag(1); //Z
-        if(this.db64("AAAAADAwAAAAAAAAAAAAAA==",inst)) stat = this.get_flag(0); //N
-        if(this.db64("AAAAAAwMAAAAAAAAAAAAAA==",inst)) stat = this.get_flag(0) || this.get_flag(1);
-        if(this.db64("AAAAAFVVAAAAAAAAAAAAAA==",inst)) stat = !stat;
-        if(this.db64("AAAAAAD/AAAAAAAAAAAAAA==",inst)) this.condJump(stat,temp);
-        if(this.db64("AAAAAP8AAAAAAAAAAAAAAA==",inst)) this.condJumpRel(stat,temp);
-        if(this.db64("AAgQAAAAAAAAAAAAAAAAAA==",inst)) this.pushW(this.regs[14]+3);
-        if(this.db64("ABgwgAAAAAAAAAAAAAAAAA==",inst)) {this.regs[14] = temp; return;}
-        if(this.db64("AAAAPwAAAAAAAAAAAAAAAA==",inst)) flg = 0;
-        if(this.db64("AAAABwAAAAAAAAAAAAAAAA==",inst)) flg = !flg;
-        if(this.db64("AAAAJAAAAAAAAAAAAAAAAA==",inst)) this.set_flag(2,flg);
-        if(this.db64("AAAAEgAAAAAAAAAAAAAAAA==",inst)) this.set_flag(1,flg);
-        if(this.db64("AAAACQAAAAAAAAAAAAAAAA==",inst)) this.set_flag(0,flg);
-        if(this.db64("AAAAQAAAAAAAAAAAAAAAAA==",inst)) this.syscall();
-        if(this.db64("/+fPfwAA/////////w8AAA==",inst)) this.regs[14]++;
-        if(this.db64("/+fNAAAA/////////w8AAA==",inst)) this.regs[14]++;
-        if(this.db64("/gcAAAAAAAD//////w8AAA==",inst)) this.regs[14]++;
-        if(this.db64("/gEAAAAAAAD//////w8AAA==",inst)) this.regs[14]++;
+        if(this.db64("H/f9/v/+//4AAAH7AD4=",inst)) src = temp = this.get_reg(r1);
+        if(this.db64("AAAAAAAAAAAAAAAAAIA=",inst)) this.set_memB((op1<<8|op2), op3);
+        if(this.db64("H////gAAAAAAAAAAA3g=",inst)) addr = (op2<<8|op3)+this.get_reg(r2);
+        if(this.db64("H7AAAAAAAAAAAAAAAGA=",inst)) temp = this.get_memW(addr&0xffff);
+        if(this.db64("AA/sAAAAAAAAAAAAAxA=",inst)) temp = this.get_memB(addr&0xffff);
+        if(this.db64("AAAD/gAAAAAAAAAAAAg=",inst)) temp = this.get_memBX(addr&0xffff);
+        if(this.db64("AAAAAf/+AAAAAAAAAAQ=",inst)) temp = (op2<<8|op3);
+        if(this.db64("AAAAAAAB//4AAAAAAAI=",inst)) temp = this.get_reg(r2); 
+        if(this.db64("AAAAAAAAAAH//gAAPAA=",inst)) temp = (op1<<8|op2);
+        if(this.db64("AAAAAAAAAAAAAAAAgAA=",inst)) temp = this.popB();
+        if(this.db64("AAAAAAAAAAAAAQAAQAA=",inst)) temp = this.popW();
+        if(this.db64("ECQJBIIAggAAAAAAAAA=",inst)) temp = src + temp;
+        if(this.db64("CJIkikQCRAIAAAAAAAA=",inst)) temp = src - temp;
+        if(this.db64("ACAIBAIAAgAAAAAAAAA=",inst)) temp += this.get_flag(2);
+        if(this.db64("ABAEAgACAAIAAAAAAAA=",inst)) temp -= !this.get_flag(2);
+        if(this.db64("AAAAAAEAAQAAAAAAAAA=",inst)) temp = src * temp;
+        if(this.db64("AAAAAACAAIAAAAAAAAA=",inst)) temp = src / temp;
+        if(this.db64("AAAAAABAAEAAAAAAAAA=",inst)) temp = src % temp;
+        if(this.db64("BAEAQCAAIAAAAAAAAAA=",inst)) temp = src & temp;
+        if(this.db64("AgCAIBAAEAAAAAAAAAA=",inst)) temp = src | temp;
+        if(this.db64("AQBAEAgACAAAAAAAAAA=",inst)) temp = src ^ temp;
+        if(this.db64("AAAAAAAAAAAAAAAIAAA=",inst)) {temp = src&0x80? src|0xFF00 : src;}
+        if(this.db64("AAAAAAAAAAAAAAAQAAA=",inst)) temp = !temp;
+        if(this.db64("AAAAAAAgACAAAAAAAAA=",inst)) temp = this.shr(src,temp);
+        if(this.db64("AAAAAAAEAAQAAAAAAAA=",inst)) temp = this.ror(src,temp);
+        if(this.db64("AAAAAAAQABAAAAAAAAA=",inst)) temp = this.shl(src,temp);
+        if(this.db64("AAAAAAAIAAgAAAAAAAA=",inst)) temp = this.rol(src,temp);
+        if(this.db64("AAAAAAAAAAAAAAEAAgA=",inst)) ++temp;
+        if(this.db64("AAAAAAAAAAAAAACAAQA=",inst)) --temp;
+        if(this.db64("AAAAAf/+AAAAAAAAAAQ=",inst)) temp += this.get_reg(r2);
+        if(this.db64("AAAAAAAAAAAAAAACBAA=",inst)) this.pushB(temp);
+        if(this.db64("AAAAAAAAAAAAAAABCAA=",inst)) this.pushW(temp);
+        if(this.db64("H7ft/v/C/8IAAAGQAAA=",inst)) {this.updateFlags(temp)}
+        if(this.db64("AAAAAAAAAAAAAAAAAD4=",inst)) this.updateSignFlags(src,temp);
+        if(this.db64("HzfN9vv++/4AAAGQAAA=",inst)) temp &= 0xFFFF;
+        if(this.db64("Hz/P9/v/+/4AAAGYwEA=",inst)) this.set_reg(r1, temp);
+        if(this.db64("AAAQAAAAAAAAAAAAAwA=",inst)) this.set_memB(addr&0xffff, temp);
+        if(this.db64("AEAAAAAAAAAAAAAAAAA=",inst)) this.set_memW(addr&0xffff, temp);
+        if(this.db64("AAAAAAAAAAAGBgAAAAA=",inst)) stat = this.get_flag(2); //C
+        if(this.db64("AAAAAAAAAAGBgAAAAAA=",inst)) stat = this.get_flag(1); //Z
+        if(this.db64("AAAAAAAAAABgYAAAAAA=",inst)) stat = this.get_flag(0); //N
+        if(this.db64("AAAAAAAAAAAYGAAAAAA=",inst)) stat = this.get_flag(0) || this.get_flag(1);
+        if(this.db64("AAAAAAAAAACqqgAAAAA=",inst)) stat = !stat;
+        if(this.db64("AAAAAAAAAAH+AAAAAAA=",inst)) this.condJump(stat,temp);
+        if(this.db64("AAAAAAAAAAAB/gAAAAA=",inst)) this.condJumpRel(stat,temp);
+        if(this.db64("AAAAAAAAAAAAAAAgEAA=",inst)) this.pushW(this.regs[14]+3);
+        if(this.db64("AAAAAAAAAAAAAQBgMAA=",inst)) {this.regs[14] = temp; return;}
+        if(this.db64("AAAAAAAAAAAAAH4AAAA=",inst)) flg = 0;
+        if(this.db64("AAAAAAAAAAAAAA4AAAA=",inst)) flg = !flg;
+        if(this.db64("AAAAAAAAAAAAAEgAAAA=",inst)) this.set_flag(2,flg);
+        if(this.db64("AAAAAAAAAAAAACQAAAA=",inst)) this.set_flag(1,flg);
+        if(this.db64("AAAAAAAAAAAAABIAAAA=",inst)) this.set_flag(0,flg);
+        if(this.db64("AAAAAAAAAAAAAIAAAAA=",inst)) this.syscall();
+        if(this.db64("H/////////4AAP+fz/4=",inst)) this.regs[14]++;
+        if(this.db64("H/////////4AAAGbz/4=",inst)) this.regs[14]++;
+        if(this.db64("H//////+AAAAAAAAD/w=",inst)) this.regs[14]++;
+        if(this.db64("H//////+AAAAAAAAA/w=",inst)) this.regs[14]++;
         if(inst == 0x00) this.set_flag(3,1);
-        // this.db64(B64,inst)
     }
 
     this.set_memB = (ad, val) => { this.mem[ad] = val}
@@ -223,7 +213,6 @@ function VirtualMachine() {
         if(!this.get_flag(3))
             this.execute(this.get_memB(this.regs[14]),this.get_memB(this.regs[14]+1),this.get_memB(this.regs[14]+2),this.get_memB(this.regs[14]+3));
         this.regs[0] = 0;
-        //console.log(this.mem.slice(this.regs[13],256))
     }
 
     this.loadHex = (hex,start=256) => {
@@ -241,8 +230,4 @@ function VirtualMachine() {
             }
         }
     }
-
 }
-
-let vm = new VirtualMachine()
-vm.test()
