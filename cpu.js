@@ -196,6 +196,7 @@ function VirtualMachine() {
             this.set_reg(10,0)
         }
         if(cmd==0x50) terminal(this.mem.slice(this.regs[10],this.regs[9]).toString()+'\n')
+        if(cmd==0x51) this.mem = this.mem.copyWithin(this.regs[10],this.regs[9],this.regs[9]+this.regs[8])
         if(cmd==0x70){
             let resolution = 64;
             let pxsize = 128/resolution;

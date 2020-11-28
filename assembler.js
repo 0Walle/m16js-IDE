@@ -34,7 +34,9 @@ function Assembler() {
     this.parseLine = (line) => line.match(/^[\t ]*(?:([a-z_\d]*)[:])?(?:\s*(.?[a-z]+)(?:[\t ]+(.*))?)?/i)
 
     this.assemble = (code) =>{
-        code = code.split('\n')
+        line_map = code.split(/\n/).map((c,i) => new Array(c.split("|").length).fill(i)).flat()
+        console.log(line_map)
+        code = code.split(/\n|\|/)
 
         this.labels = {
             "sys_printR":0x11,
@@ -61,7 +63,7 @@ function Assembler() {
 
         for (var i = 0; i < code.length; i++) {
             if(!code[i]) continue
-            this.line = i
+            this.line = line_map[i]
 
             inst = code[i].match(/^[\t ]*(?:([a-z_\d]*)[:])?(?:\s*(.?[a-z]+)(?:[\t ]+(.*))?)?/i)
             
@@ -75,7 +77,8 @@ function Assembler() {
             if(inst[2]!=undefined){
                 if(inst[2][0]==';') continue
                 
-                mem_breakpoints[asmpc+locpos] = i;
+                console.log(inst)
+                mem_breakpoints[asmpc+locpos] = this.line;
 
                 let type = this.opcodes_type[inst[2]]
 

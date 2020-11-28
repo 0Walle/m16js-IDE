@@ -323,6 +323,10 @@
                 <span class="iconify" data-icon="mdi:download" data-inline="false" style="top: -2px;"></span>
                 <span style="vertical-align: top;">Download</span>
             </div>
+            <div class='button' id="downbutton" onclick="exportCode()">
+                <span class="iconify" data-icon="mdi:download" data-inline="false" style="top: -2px;"></span>
+                <span style="vertical-align: top;">Export</span>
+            </div>
             <div class='button' id="debugbutton" onclick="toogleDebug()" disabled='1'>
                 <span class="iconify" data-icon="mdi:bug" data-inline="false" style="top: -2px;"></span>
                 <span style="vertical-align: top;">Debug</span>
@@ -714,6 +718,37 @@ loop:
             var url = URL.createObjectURL(file);
             a.href = url;
             a.download = "m160_WebAssembler.asm";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);  
+            }, 0); 
+        }
+
+        function exportCode() {
+            let result = new Uint8Array(0x10000);
+            for (const section_pos in mach) {
+                let mcode = mach[section_pos];
+                let section = [];
+                while (mcode.length > 0) { 
+                    section.push(parseInt(mcode.substring(0, 2), 16));
+                    mcode = mcode.slice(2);
+                }
+                result.set(section, section_pos);
+            }
+            result[0xfffc] = 0x00;
+            result[0xfffd] = 0xff;
+            result[0xfffe] = 0x01;
+            result[0xffff] = 0x00;
+
+            console.log(result);
+
+            var file = new Blob([result], {type: "application/octet-binary"});
+            var a = document.createElement("a")
+            var url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = "program.m161";
             document.body.appendChild(a);
             a.click();
             setTimeout(function() {
